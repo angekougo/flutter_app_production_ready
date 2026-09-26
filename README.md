@@ -53,7 +53,7 @@ vignettes colorées. Voir [Captures d'écran](#11-commandes).</sub>
 | ≥ 10 tests unitaires | **87** (logique métier, validateurs, repositories, providers, traductions, contraste) | [`test/`](test) |
 | ≥ 5 tests de widgets | **39** (écrans, accessibilité, reconstructions, changement de langue) | [`test/`](test) |
 | ≥ 2 tests d'intégration | **2 parcours + 1 mesure de performance** sur l'app complète | [`integration_test/`](integration_test) |
-| Aucun jank (60 fps) | Défilement mesuré en mode profile en CI : p90 de construction < 16 ms, < 5 % d'images hors budget | [§ 5](#5-performance) |
+| Aucun jank (60 fps) | Défilement mesuré en mode profile en CI : **p90 4,55 ms, 0 image hors budget** sur 350 (seuils : 16 ms, 5 %) | [§ 5](#5-performance) |
 | Images optimisées et lazy-loadées | Taille TMDB et décodage adaptés à l'affichage, cache disque, listes `builder` | [§ 5](#5-performance) |
 | Pas de rebuilds inutiles | **flutter_hooks** + `select` + égalité par valeur ; reconstructions **mesurées** par des tests | [`test/performance/`](test/performance) |
 | Semantic labels | Libellés sur tous les éléments interactifs, en-têtes, zones live ; règles Flutter vérifiées sur 6 écrans | [§ 6](#6-accessibilité) |
@@ -156,8 +156,16 @@ reproductibles, sans réseau ni compte.
 ### Mesures (CI, mode profile, défilement de l'accueil et d'une grille de 60 affiches)
 
 <!-- PERF:START -->
-Mesures publiées à chaque exécution dans le résumé du job
-« Tests d'intégration (Linux) » ([dernière exécution](https://github.com/angekougo/flutter_app_production_ready/actions/workflows/ci.yml)).
+| Mesure | Résultat | Budget 60 fps |
+|---|---:|---:|
+| Images analysées | 350 | — |
+| Construction moyenne | **1,89 ms** | 16 ms |
+| 90ᵉ centile | **4,55 ms** | < 16 ms |
+| 99ᵉ centile | **6,72 ms** | — |
+| Images hors budget | **0** | < 5 % |
+
+<sub>Run CI du commit `57d56c3`. Mesures republiées à chaque exécution dans le résumé du job
+« Tests d'intégration (Linux) » ([exécutions](https://github.com/angekougo/flutter_app_production_ready/actions/workflows/ci.yml)).</sub>
 <!-- PERF:END -->
 
 Le test échoue si le **90ᵉ centile du temps de construction dépasse 16 ms** ou si
