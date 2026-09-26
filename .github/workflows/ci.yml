@@ -21,10 +21,10 @@ env:
 jobs:
   quality:
     name: Lint, analyse et tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: subosito/flutter-action@v2
         with:
@@ -49,10 +49,10 @@ jobs:
         run: dart format --output=none --set-exit-if-changed lib test integration_test test_driver
 
       - name: Analyse statique
-        run: flutter analyze --fatal-infos --fatal-warnings
+        run: tool/ci/run.sh "Analyse statique" flutter analyze --fatal-infos --fatal-warnings
 
       - name: Tests unitaires et de widgets
-        run: flutter test --coverage --reporter expanded
+        run: tool/ci/run.sh "Tests" flutter test --coverage --reporter expanded
 
       - name: Couverture
         run: |
@@ -67,7 +67,7 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage/lcov.info
@@ -75,10 +75,10 @@ jobs:
   integration:
     name: Tests d'intégration (Linux)
     needs: quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: subosito/flutter-action@v2
         with:
@@ -100,12 +100,17 @@ jobs:
           flutter pub get
 
       - name: Parcours utilisateur
-        run: xvfb-run -a flutter test integration_test/app_journeys_test.dart -d linux --reporter expanded
+        run: >-
+          tool/ci/run.sh "Parcours utilisateur"
+          xvfb-run -a flutter test integration_test/app_journeys_test.dart
+          -d linux --reporter expanded
 
       # Mode profile : seules mesures représentatives (AOT, sans assertions).
+      # Lancée même si les parcours échouent : les deux diagnostics sont utiles.
       - name: Performance du défilement (60 fps)
+        if: success() || failure()
         run: |
-          xvfb-run -a flutter drive --profile \
+          tool/ci/run.sh "Performance" xvfb-run -a flutter drive --profile \
             --driver=test_driver/perf_driver.dart \
             --target=integration_test/scroll_performance_test.dart \
             -d linux
@@ -120,7 +125,7 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: performance
@@ -130,14 +135,14 @@ jobs:
   android:
     name: APK Android
     needs: quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: write # publication de la release sur un tag
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -181,17 +186,17 @@ jobs:
       - name: Build APK release
         run: |
           flutter pub get
-          flutter build apk --release
+          tool/ci/run.sh "Build APK" flutter build apk --release
           cp build/app/outputs/flutter-apk/app-release.apk cinetheque-${{ github.ref_name }}.apk
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: apk
           path: cinetheque-*.apk
 
       - name: Release GitHub
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: cinetheque-*.apk
           generate_release_notes: true

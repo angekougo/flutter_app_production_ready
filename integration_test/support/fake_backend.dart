@@ -252,7 +252,21 @@ extension PumpUntilX on WidgetTester {
     final end = binding.clock.now().add(timeout);
     while (finder.evaluate().isEmpty) {
       if (binding.clock.now().isAfter(end)) {
-        throw TestFailure('Introuvable après $timeout : $finder');
+        // Diagnostic : ce que l'écran affiche au moment du blocage.
+        final onScreen = find
+            .byType(Text)
+            .evaluate()
+            .map((e) {
+              final text = e.widget as Text;
+              return text.data ?? text.textSpan?.toPlainText();
+            })
+            .nonNulls
+            .where((t) => t.trim().isNotEmpty)
+            .take(40)
+            .join(' | ');
+        throw TestFailure(
+          'Introuvable après $timeout : $finder\nÀ l’écran : $onScreen',
+        );
       }
       await pump(const Duration(milliseconds: 100));
     }

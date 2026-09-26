@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
+import 'app/bundled_fonts.dart';
 import 'app/isar_schemas.dart';
 import 'core/config/env.dart';
 import 'core/l10n/locale_providers.dart';
@@ -13,6 +14,7 @@ import 'core/storage/secure_storage_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  useBundledFonts();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
