@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- API TMDB, Supabase et affiches : indispensable en release (le
+         manifeste debug l'ajoute seulement pour le développement). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Détection hors ligne (connectivity_plus). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
     <application
         android:label="Cinéthèque"
         android:name="${applicationName}"
