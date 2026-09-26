@@ -1,0 +1,158 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
+import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_dimensions.dart';
+import '../../app/theme/app_typography.dart';
+import '../../core/network/api_constants.dart';
+import '../extensions/format_x.dart';
+
+/// Affiche d'un film (ratio 2:3).
+///
+/// Sans image (pas d'affiche TMDB, chargement, hors ligne sans cache
+/// d'image), affiche une teinte propre au film avec son titre, comme le
+/// placeholder du design.
+class PosterCard extends StatelessWidget {
+  const PosterCard({
+    super.key,
+    required this.movieId,
+    required this.title,
+    this.posterPath,
+    this.rating,
+    this.topRight,
+    this.onTap,
+    this.titleStyle,
+    this.width,
+    this.showPlaceholderTitle = true,
+  });
+
+  final int movieId;
+  final String title;
+  final String? posterPath;
+
+  /// Note affichée en badge (masquée si `null`).
+  final double? rating;
+
+  /// Remplace le badge de note (ex. cœur des favoris).
+  final Widget? topRight;
+  final VoidCallback? onTap;
+  final TextStyle? titleStyle;
+  final double? width;
+
+  ///  pour les vignettes trop petites pour afficher un titre.
+  final bool showPlaceholderTitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = AppColors.posterTint(movieId);
+    final radius = BorderRadius.circular(AppDimensions.radiusMd);
+    final url = ApiConstants.poster(posterPath);
+    final placeholder = _Placeholder(
+      tint: tint,
+      title: showPlaceholderTitle ? title : null,
+      style: titleStyle,
+    );
+
+    final badge =
+        topRight ?? (rating == null ? null : RatingBadge(rating: rating!));
+
+    return Semantics(
+      button: onTap != null,
+      label: title,
+      child: SizedBox(
+        width: width,
+        child: AspectRatio(
+          aspectRatio: AppDimensions.posterAspectRatio,
+          child: Material(
+            color: tint,
+            shape: RoundedRectangleBorder(
+              borderRadius: radius,
+              side: BorderSide(
+                color: Color.lerp(tint, AppColors.papier, 0.12)!,
+              ),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (url == null)
+                    placeholder
+                  else
+                    CachedNetworkImage(
+                      imageUrl: url,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 360,
+                      fadeInDuration: const Duration(milliseconds: 200),
+                      placeholder: (_, _) => placeholder,
+                      errorWidget: (_, _, _) => placeholder,
+                    ),
+                  if (badge != null)
+                    Positioned(
+                      top: AppDimensions.sm,
+                      right: AppDimensions.sm,
+                      child: badge,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Placeholder extends StatelessWidget {
+  const _Placeholder({required this.tint, this.title, this.style});
+
+  final Color tint;
+  final String? title;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    if (title == null) return ColoredBox(color: tint);
+    return ColoredBox(
+      color: tint,
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.md),
+          child: Text(
+            title!,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: style ?? AppTypography.posterTitle,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// « ★ 7,8 » sur fond sombre, en haut à droite des affiches.
+class RatingBadge extends StatelessWidget {
+  const RatingBadge({super.key, required this.rating});
+
+  final double rating;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xE6120F0C),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm - 2),
+      ),
+      child: Text(
+        '★ ${rating.asRating}',
+        style: AppTypography.meta.copyWith(
+          color: AppColors.projecteur,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
