@@ -143,9 +143,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
               ),
               const SizedBox(height: AppDimensions.xl),
-              Text(
-                l10n.registerTitle,
-                style: AppTypography.display.copyWith(fontSize: 40),
+              Semantics(
+                header: true,
+                child: Text(
+                  l10n.registerTitle,
+                  style: AppTypography.display.copyWith(fontSize: 40),
+                ),
               ),
               const SizedBox(height: AppDimensions.md),
               Text(

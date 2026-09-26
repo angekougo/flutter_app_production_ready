@@ -29,9 +29,12 @@ class SectionHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            child: Text(
-              title,
-              style: AppTypography.section.copyWith(fontSize: 26),
+            child: Semantics(
+              header: true,
+              child: Text(
+                title,
+                style: AppTypography.section.copyWith(fontSize: 26),
+              ),
             ),
           ),
           if (tag != null)
@@ -41,8 +44,7 @@ class SectionHeader extends StatelessWidget {
               onPressed: onAction,
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 36),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                minimumSize: const Size.square(AppDimensions.minTapTarget),
               ),
               child: Text(
                 actionLabel!,

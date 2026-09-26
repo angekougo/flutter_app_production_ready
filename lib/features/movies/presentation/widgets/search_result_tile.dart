@@ -30,58 +30,72 @@ class SearchResultTile extends StatelessWidget {
       ?genreName,
     ].join(' · ');
 
-    return InkWell(
+    return Semantics(
+      button: true,
+      excludeSemantics: true,
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.gutter,
-          vertical: AppDimensions.md,
-        ),
-        child: Row(
-          children: [
-            PosterCard(
-              width: thumbnailWidth,
-              movieId: movie.id,
-              title: movie.title,
-              posterPath: movie.posterPath,
-              showPlaceholderTitle: false,
-            ),
-            const SizedBox(width: AppDimensions.lg),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    movie.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.section.copyWith(fontSize: 20),
-                  ),
-                  if (subtitle.isNotEmpty) ...[
-                    const SizedBox(height: AppDimensions.xs),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.body.copyWith(height: 1.3),
-                    ),
-                  ],
-                  if (movie.hasRating) ...[
-                    const SizedBox(height: AppDimensions.xs),
-                    Text(
-                      '★ ${context.l10n.rating(movie.voteAverage)}',
-                      style: AppTypography.meta.copyWith(
-                        color: AppColors.projecteur,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ],
+      label: context.l10n.movieSummary(
+        movie.title,
+        year: movie.year,
+        genre: genreName,
+        rating: movie.hasRating ? movie.voteAverage : null,
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.gutter,
+            vertical: AppDimensions.md,
+          ),
+          child: Row(
+            children: [
+              PosterCard(
+                width: thumbnailWidth,
+                movieId: movie.id,
+                title: movie.title,
+                posterPath: movie.posterPath,
+                showPlaceholderTitle: false,
               ),
-            ),
-            const SizedBox(width: AppDimensions.sm),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.poussiere),
-          ],
+              const SizedBox(width: AppDimensions.lg),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movie.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.section.copyWith(fontSize: 20),
+                    ),
+                    if (subtitle.isNotEmpty) ...[
+                      const SizedBox(height: AppDimensions.xs),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.body.copyWith(height: 1.3),
+                      ),
+                    ],
+                    if (movie.hasRating) ...[
+                      const SizedBox(height: AppDimensions.xs),
+                      Text(
+                        '★ ${context.l10n.rating(movie.voteAverage)}',
+                        style: AppTypography.meta.copyWith(
+                          color: AppColors.projecteur,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppDimensions.sm),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.poussiere,
+              ),
+            ],
+          ),
         ),
       ),
     );

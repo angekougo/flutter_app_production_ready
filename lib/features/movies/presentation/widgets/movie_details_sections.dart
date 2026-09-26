@@ -152,19 +152,28 @@ class MovieStatsBar extends StatelessWidget {
       fontSize: 15,
       letterSpacing: 0.5,
     );
-    Widget stat(String label, String value, {Color? color}) => Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTypography.overline.copyWith(fontSize: 11)),
-          const SizedBox(height: AppDimensions.sm),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: valueStyle.copyWith(color: color),
-          ),
-        ],
+    // Chaque statistique est lue d’un bloc : « NOTE, note 8,2 sur 10 ».
+    Widget stat(
+      String label,
+      String value, {
+      Color? color,
+      String? semanticValue,
+    }) => Expanded(
+      child: MergeSemantics(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTypography.overline.copyWith(fontSize: 11)),
+            const SizedBox(height: AppDimensions.sm),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              semanticsLabel: semanticValue,
+              style: valueStyle.copyWith(color: color),
+            ),
+          ],
+        ),
       ),
     );
 
@@ -191,6 +200,9 @@ class MovieStatsBar extends StatelessWidget {
               movie.hasRating
                   ? '★ ${l10n.rating(movie.voteAverage)}'
                   : l10n.notAvailable,
+              semanticValue: movie.hasRating
+                  ? l10n.a11yRating(l10n.rating(movie.voteAverage))
+                  : null,
               color: movie.hasRating ? AppColors.projecteur : null,
             ),
             stat(l10n.statPopularity, l10n.popularity(movie.popularity)),
@@ -250,41 +262,50 @@ class CastMemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Semantics(
+      button: true,
+      excludeSemantics: true,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-      child: SizedBox(
-        width: width,
-        child: Column(
-          children: [
-            PersonAvatar(
-              personId: member.id,
-              initials: member.initials,
-              profilePath: member.profilePath,
-              size: 80,
-            ),
-            const SizedBox(height: AppDimensions.sm),
-            Text(
-              member.name,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: AppTypography.label.copyWith(
-                fontWeight: FontWeight.w500,
-                height: 1.25,
+      label: switch (member.character) {
+        final character? => context.l10n.a11yCastMember(member.name, character),
+        null => member.name,
+      },
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        child: SizedBox(
+          width: width,
+          child: Column(
+            children: [
+              PersonAvatar(
+                personId: member.id,
+                initials: member.initials,
+                profilePath: member.profilePath,
+                size: 80,
               ),
-            ),
-            if (member.character != null) ...[
-              const SizedBox(height: 2),
+              const SizedBox(height: AppDimensions.sm),
               Text(
-                member.character!,
+                member.name,
                 textAlign: TextAlign.center,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: AppTypography.caption,
+                style: AppTypography.label.copyWith(
+                  fontWeight: FontWeight.w500,
+                  height: 1.25,
+                ),
               ),
+              if (member.character != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  member.character!,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.caption,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

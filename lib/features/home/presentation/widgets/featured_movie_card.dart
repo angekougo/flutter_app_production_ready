@@ -31,90 +31,104 @@ class FeaturedMovieCard extends StatelessWidget {
       if (movie.hasRating) '★ ${context.l10n.rating(movie.voteAverage)}',
     ].join(' · ');
 
-    return Padding(
-      padding: AppDimensions.screenPadding,
-      child: Material(
-        color: tint,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLg + 4),
-          side: BorderSide(color: Color.lerp(tint, AppColors.papier, 0.12)!),
+    // Une seule annonce pour toute la carte : « N°1 des tendances : titre, année, genre, note ».
+    return Semantics(
+      button: true,
+      excludeSemantics: true,
+      onTap: onTap,
+      label: context.l10n.a11yFeatured(
+        context.l10n.movieSummary(
+          movie.title,
+          year: movie.year,
+          genre: genreName,
+          rating: movie.hasRating ? movie.voteAverage : null,
         ),
-        child: InkWell(
-          onTap: onTap,
-          child: SizedBox(
-            height: 210,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (backdrop != null)
-                  CachedNetworkImage(
-                    imageUrl: backdrop,
-                    fit: BoxFit.cover,
-                    fadeInDuration: const Duration(milliseconds: 250),
-                    errorWidget: (_, _, _) => const SizedBox.shrink(),
-                  ),
-                // Voile pour la lisibilité du titre sur l'image.
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        tint.withValues(alpha: 0.15),
-                        tint.withValues(alpha: 0.55),
-                        const Color(0xF20E0D0B),
-                      ],
-                      stops: const [0, 0.45, 1],
+      ),
+      child: Padding(
+        padding: AppDimensions.screenPadding,
+        child: Material(
+          color: tint,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusLg + 4),
+            side: BorderSide(color: Color.lerp(tint, AppColors.papier, 0.12)!),
+          ),
+          child: InkWell(
+            onTap: onTap,
+            child: SizedBox(
+              height: 210,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (backdrop != null)
+                    CachedNetworkImage(
+                      imageUrl: backdrop,
+                      fit: BoxFit.cover,
+                      fadeInDuration: const Duration(milliseconds: 250),
+                      errorWidget: (_, _, _) => const SizedBox.shrink(),
+                    ),
+                  // Voile pour la lisibilité du titre sur l'image.
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          tint.withValues(alpha: 0.15),
+                          tint.withValues(alpha: 0.55),
+                          const Color(0xF20E0D0B),
+                        ],
+                        stops: const [0, 0.45, 1],
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(AppDimensions.xl - 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.md,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.encre,
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusSm,
+                  Padding(
+                    padding: const EdgeInsets.all(AppDimensions.xl - 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppDimensions.md,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.encre,
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusSm,
+                            ),
+                          ),
+                          child: Text(
+                            context.l10n.featuredBadge,
+                            style: AppTypography.overline.copyWith(
+                              color: AppColors.projecteur,
+                            ),
                           ),
                         ),
-                        child: Text(
-                          context.l10n.featuredBadge,
-                          style: AppTypography.overline.copyWith(
-                            color: AppColors.projecteur,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        movie.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.display.copyWith(fontSize: 32),
-                      ),
-                      if (meta.isNotEmpty) ...[
-                        const SizedBox(height: AppDimensions.sm),
+                        const Spacer(),
                         Text(
-                          meta,
-                          maxLines: 1,
+                          movie.title,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTypography.meta.copyWith(
-                            color: AppColors.papier,
-                            fontSize: 13,
-                          ),
+                          style: AppTypography.display.copyWith(fontSize: 32),
                         ),
+                        if (meta.isNotEmpty) ...[
+                          const SizedBox(height: AppDimensions.sm),
+                          Text(
+                            meta,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.meta.copyWith(
+                              color: AppColors.papier,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

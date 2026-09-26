@@ -80,7 +80,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 style: AppTypography.section.copyWith(fontSize: 24),
               ),
               const SizedBox(height: 72),
-              Text(l10n.loginWelcomeBack, style: AppTypography.display),
+              Semantics(
+                header: true,
+                child: Text(
+                  l10n.loginWelcomeBack,
+                  style: AppTypography.display,
+                ),
+              ),
               const SizedBox(height: AppDimensions.md),
               Text(
                 l10n.loginSubtitle,

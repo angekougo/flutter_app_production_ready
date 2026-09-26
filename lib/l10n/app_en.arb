@@ -186,5 +186,10 @@
   "languageSheetTitle": "App language",
   "languageSystem": "Device language",
   "languageFrench": "Français",
-  "languageEnglish": "English"
+  "languageEnglish": "English",
+
+  "a11yRating": "rated {rating} out of 10",
+  "a11yFeatured": "#1 trending: {summary}",
+  "a11yCastMember": "{name} as {character}",
+  "a11yLoading": "Loading"
 }

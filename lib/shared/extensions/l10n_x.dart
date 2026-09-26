@@ -88,6 +88,20 @@ extension DomainMessagesX on AppLocalizations {
     ActorGender.unknown => 'other',
   };
 
+  /// Résumé lu par les lecteurs d'écran à la place du visuel d'un film :
+  /// « Marée Basse, 2024, Thriller, note 8,2 sur 10 ».
+  String movieSummary(
+    String title, {
+    int? year,
+    String? genre,
+    double? rating,
+  }) => [
+    title,
+    if (year != null) '$year',
+    ?genre,
+    if (rating != null) a11yRating(this.rating(rating)),
+  ].join(', ');
+
   /// Salutation selon l'heure : « Bonjour » de 5 h à 18 h, sinon « Bonsoir ».
   String greeting(DateTime now) =>
       (now.hour >= 5 && now.hour < 18) ? greetingDay : greetingEvening;

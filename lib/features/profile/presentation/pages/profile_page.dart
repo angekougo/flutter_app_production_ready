@@ -74,7 +74,13 @@ class ProfilePage extends ConsumerWidget {
               AppDimensions.xxl,
             ),
             children: [
-              Text(l10n.profileTitle, style: AppTypography.screenTitle),
+              Semantics(
+                header: true,
+                child: Text(
+                  l10n.profileTitle,
+                  style: AppTypography.screenTitle,
+                ),
+              ),
               const SizedBox(height: AppDimensions.xl),
               _Identity(
                 initials: user?.initials ?? '?',
@@ -311,38 +317,45 @@ class _InfoCard extends StatelessWidget {
           ),
           for (final row in rows) ...[
             const Divider(),
-            InkWell(
-              onTap: row.onTap,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppDimensions.lg),
-                child: Row(
-                  children: [
-                    // Libellé souple : il passe à la ligne plutôt que de
-                    // déborder sur les petits écrans ou en grande police.
-                    Flexible(
-                      child: Text(
-                        row.label,
-                        style: AppTypography.body.copyWith(height: 1.3),
-                      ),
+            MergeSemantics(
+              child: Semantics(
+                button: row.onTap != null,
+                child: InkWell(
+                  onTap: row.onTap,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.lg,
                     ),
-                    const SizedBox(width: AppDimensions.md),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: DefaultTextStyle.merge(
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.right,
-                          child: row.value,
+                    child: Row(
+                      children: [
+                        // Libellé souple : il passe à la ligne plutôt que de
+                        // déborder sur les petits écrans ou en grande police.
+                        Flexible(
+                          child: Text(
+                            row.label,
+                            style: AppTypography.body.copyWith(height: 1.3),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: AppDimensions.md),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: DefaultTextStyle.merge(
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.right,
+                              child: row.value,
+                            ),
+                          ),
+                        ),
+                        if (row.onTap != null)
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppColors.poussiere,
+                          ),
+                      ],
                     ),
-                    if (row.onTap != null)
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        color: AppColors.poussiere,
-                      ),
-                  ],
+                  ),
                 ),
               ),
             ),

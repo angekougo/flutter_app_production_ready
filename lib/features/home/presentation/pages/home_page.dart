@@ -220,36 +220,42 @@ class _HomeSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(top: AppDimensions.xl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: AppDimensions.screenPadding,
-            child: Row(
-              children: [
-                SkeletonBox(width: 76, height: 44, radius: 22),
-                SizedBox(width: AppDimensions.sm),
-                SkeletonBox(width: 96, height: 44, radius: 22),
-                SizedBox(width: AppDimensions.sm),
-                SkeletonBox(width: 96, height: 44, radius: 22),
-              ],
+    return Semantics(
+      label: context.l10n.a11yLoading,
+      child: const Padding(
+        padding: EdgeInsets.only(top: AppDimensions.xl),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: AppDimensions.screenPadding,
+              child: Row(
+                children: [
+                  SkeletonBox(width: 76, height: 44, radius: 22),
+                  SizedBox(width: AppDimensions.sm),
+                  SkeletonBox(width: 96, height: 44, radius: 22),
+                  SizedBox(width: AppDimensions.sm),
+                  SkeletonBox(width: 96, height: 44, radius: 22),
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: AppDimensions.xl),
-          Padding(
-            padding: AppDimensions.screenPadding,
-            child: SkeletonBox(height: 210, radius: AppDimensions.radiusLg + 4),
-          ),
-          SizedBox(height: AppDimensions.xxl),
-          Padding(
-            padding: AppDimensions.screenPadding,
-            child: SkeletonBox(width: 160, height: 28, radius: 6),
-          ),
-          SizedBox(height: AppDimensions.md),
-          MovieCarouselSkeleton(),
-        ],
+            SizedBox(height: AppDimensions.xl),
+            Padding(
+              padding: AppDimensions.screenPadding,
+              child: SkeletonBox(
+                height: 210,
+                radius: AppDimensions.radiusLg + 4,
+              ),
+            ),
+            SizedBox(height: AppDimensions.xxl),
+            Padding(
+              padding: AppDimensions.screenPadding,
+              child: SkeletonBox(width: 160, height: 28, radius: 6),
+            ),
+            SizedBox(height: AppDimensions.md),
+            MovieCarouselSkeleton(),
+          ],
+        ),
       ),
     );
   }

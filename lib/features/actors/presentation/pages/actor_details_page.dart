@@ -234,6 +234,11 @@ class _ActorContent extends StatelessWidget {
                   if (credit.year != null) '${credit.year}',
                   if (credit.role != null) credit.role!.toUpperCase(),
                 ].join(' · '),
+                semanticLabel: context.l10n.movieSummary(
+                  credit.title,
+                  year: credit.year,
+                  genre: credit.role,
+                ),
                 onTap: () => context.push(RoutePaths.movie(credit.movieId)),
               );
             },

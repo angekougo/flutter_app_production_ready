@@ -60,10 +60,13 @@ class StateMessageView extends StatelessWidget {
               child: Icon(icon, size: 36, color: accent),
             ),
             const SizedBox(height: AppDimensions.xxl),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AppTypography.section.copyWith(fontSize: 26),
+            Semantics(
+              header: true,
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: AppTypography.section.copyWith(fontSize: 26),
+              ),
             ),
             const SizedBox(height: AppDimensions.lg),
             Text(

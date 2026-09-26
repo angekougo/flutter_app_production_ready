@@ -44,15 +44,18 @@ class PersonAvatar extends StatelessWidget {
         color: tint,
         border: Border.all(color: Color.lerp(tint, AppColors.papier, 0.15)!),
       ),
-      child: url == null
-          ? fallback
-          : CachedNetworkImage(
-              imageUrl: url,
-              fit: BoxFit.cover,
-              memCacheWidth: (size * 3).round(),
-              placeholder: (_, _) => fallback,
-              errorWidget: (_, _, _) => fallback,
-            ),
+      // Portrait décoratif : le nom est affiché (et lu) à côté.
+      child: ExcludeSemantics(
+        child: url == null
+            ? fallback
+            : CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.cover,
+                memCacheWidth: (size * 3).round(),
+                placeholder: (_, _) => fallback,
+                errorWidget: (_, _, _) => fallback,
+              ),
+      ),
     );
   }
 }

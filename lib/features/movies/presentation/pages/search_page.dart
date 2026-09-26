@@ -79,9 +79,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    context.l10n.searchTitle,
-                    style: AppTypography.screenTitle,
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      context.l10n.searchTitle,
+                      style: AppTypography.screenTitle,
+                    ),
                   ),
                   const SizedBox(height: AppDimensions.lg),
                   Text(
@@ -193,11 +196,14 @@ class _SearchBody extends ConsumerWidget {
         return _IdleView(typedQuery: typedQuery, onRecentTap: onRecentTap);
 
       case SearchStatus.loading:
-        return ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(top: AppDimensions.lg),
-          itemCount: 6,
-          itemBuilder: (_, _) => const SearchResultSkeleton(),
+        return Semantics(
+          label: l10n.a11yLoading,
+          child: ListView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(top: AppDimensions.lg),
+            itemCount: 6,
+            itemBuilder: (_, _) => const SearchResultSkeleton(),
+          ),
         );
 
       case SearchStatus.failure:

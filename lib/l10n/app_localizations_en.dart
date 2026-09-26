@@ -623,4 +623,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageEnglish => 'English';
+
+  @override
+  String a11yRating(String rating) {
+    return 'rated $rating out of 10';
+  }
+
+  @override
+  String a11yFeatured(String summary) {
+    return '#1 trending: $summary';
+  }
+
+  @override
+  String a11yCastMember(String name, String character) {
+    return '$name as $character';
+  }
+
+  @override
+  String get a11yLoading => 'Loading';
 }

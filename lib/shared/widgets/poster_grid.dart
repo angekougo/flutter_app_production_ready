@@ -54,6 +54,7 @@ class PosterGridItem extends StatelessWidget {
     this.posterPath,
     this.onTap,
     this.topRight,
+    this.semanticLabel,
   });
 
   final int movieId;
@@ -64,6 +65,10 @@ class PosterGridItem extends StatelessWidget {
 
   /// Badge en haut à droite de l'affiche (ex. cœur des favoris).
   final Widget? topRight;
+
+  /// Résumé lu par les lecteurs d'écran (titre, année, note…) ; le titre
+  /// et la légende affichés sous l'affiche ne sont alors pas relus.
+  final String? semanticLabel;
 
   static TextStyle get _titleStyle =>
       AppTypography.label.copyWith(fontSize: 13);
@@ -108,20 +113,25 @@ class PosterGridItem extends StatelessWidget {
           titleStyle: AppTypography.posterTitle.copyWith(fontSize: 14),
           onTap: onTap,
           topRight: topRight,
+          semanticLabel: semanticLabel ?? [title, caption].join(', '),
         ),
         const SizedBox(height: AppDimensions.sm),
-        Text(
-          title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: _titleStyle,
-        ),
-        if (caption.isNotEmpty)
-          Text(
-            caption,
+        ExcludeSemantics(
+          child: Text(
+            title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: _captionStyle,
+            style: _titleStyle,
+          ),
+        ),
+        if (caption.isNotEmpty)
+          ExcludeSemantics(
+            child: Text(
+              caption,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _captionStyle,
+            ),
           ),
       ],
     );

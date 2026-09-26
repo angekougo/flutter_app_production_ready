@@ -86,15 +86,23 @@ class MovieDetailsPage extends ConsumerWidget {
                         : context.go(RoutePaths.home),
                   ),
                   const Spacer(),
-                  RoundIconButton(
-                    icon: isFavorite
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    color: isFavorite ? AppColors.projecteur : AppColors.papier,
-                    tooltip: isFavorite
-                        ? context.l10n.favoriteRemove
-                        : context.l10n.favoriteAdd,
-                    onPressed: toggleFavorite,
+                  // État lu par les lecteurs d’écran (activé / désactivé).
+                  MergeSemantics(
+                    child: Semantics(
+                      toggled: isFavorite,
+                      child: RoundIconButton(
+                        icon: isFavorite
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        color: isFavorite
+                            ? AppColors.projecteur
+                            : AppColors.papier,
+                        tooltip: isFavorite
+                            ? context.l10n.favoriteRemove
+                            : context.l10n.favoriteAdd,
+                        onPressed: toggleFavorite,
+                      ),
+                    ),
                   ),
                 ],
               ),

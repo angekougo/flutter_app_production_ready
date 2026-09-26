@@ -23,6 +23,9 @@ abstract final class AppDimensions {
   static const chipHeight = 44.0;
   static const iconButtonSize = 48.0;
 
+  /// Cible tactile minimale (Android 48 dp, WCAG 2.5.5).
+  static const minTapTarget = 48.0;
+
   /// Carte affiche des carrousels (ratio 2:3).
   static const posterWidth = 112.0;
   static const posterHeight = 168.0;

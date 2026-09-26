@@ -114,6 +114,11 @@ class _Grid extends StatelessWidget {
                   if (movie.hasRating)
                     '★ ${context.l10n.rating(movie.voteAverage)}',
                 ].join(' · '),
+                semanticLabel: context.l10n.movieSummary(
+                  movie.title,
+                  year: movie.year,
+                  rating: movie.hasRating ? movie.voteAverage : null,
+                ),
                 onTap: () =>
                     context.push(RoutePaths.movie(movie.id), extra: movie),
               );

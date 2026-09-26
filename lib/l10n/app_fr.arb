@@ -210,5 +210,13 @@
   "languageSheetTitle": "Langue de l’application",
   "languageSystem": "Langue de l’appareil",
   "languageFrench": "Français",
-  "languageEnglish": "English"
+  "languageEnglish": "English",
+
+  "a11yRating": "note {rating} sur 10",
+  "@a11yRating": { "placeholders": { "rating": { "type": "String" } } },
+  "a11yFeatured": "N°1 des tendances : {summary}",
+  "@a11yFeatured": { "placeholders": { "summary": { "type": "String" } } },
+  "a11yCastMember": "{name}, dans le rôle de {character}",
+  "@a11yCastMember": { "placeholders": { "name": { "type": "String" }, "character": { "type": "String" } } },
+  "a11yLoading": "Chargement en cours"
 }

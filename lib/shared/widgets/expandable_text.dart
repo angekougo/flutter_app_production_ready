@@ -57,8 +57,7 @@ class _ExpandableTextState extends State<ExpandableText> {
                   onPressed: () => setState(() => _expanded = !_expanded),
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
-                    minimumSize: const Size(0, 36),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    minimumSize: const Size.square(AppDimensions.minTapTarget),
                   ),
                   child: Text(
                     _expanded ? context.l10n.readLess : context.l10n.readMore,

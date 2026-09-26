@@ -87,9 +87,12 @@ class FavoritesPage extends ConsumerWidget {
                 AppDimensions.gutter,
                 0,
               ),
-              child: Text(
-                l10n.favoritesTitle,
-                style: AppTypography.screenTitle,
+              child: Semantics(
+                header: true,
+                child: Text(
+                  l10n.favoritesTitle,
+                  style: AppTypography.screenTitle,
+                ),
               ),
             ),
             Expanded(child: body),
@@ -154,6 +157,13 @@ class _FavoritesGrid extends StatelessWidget {
                   if (favorite.voteAverage > 0)
                     '★ ${context.l10n.rating(favorite.voteAverage)}',
                 ].join(' · '),
+                semanticLabel: context.l10n.movieSummary(
+                  favorite.title,
+                  year: favorite.year,
+                  rating: favorite.voteAverage > 0
+                      ? favorite.voteAverage
+                      : null,
+                ),
                 onTap: () => context.push(
                   RoutePaths.movie(favorite.movieId),
                   extra: favorite.toMovie(),

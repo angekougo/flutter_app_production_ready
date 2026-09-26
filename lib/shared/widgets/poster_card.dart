@@ -24,7 +24,12 @@ class PosterCard extends StatelessWidget {
     this.titleStyle,
     this.width,
     this.showPlaceholderTitle = true,
+    this.semanticLabel,
   });
+
+  /// Texte lu par les lecteurs d'écran (par défaut : titre et note). Le
+  /// visuel (image, titre du placeholder, badge) n'est pas lu en plus.
+  final String? semanticLabel;
 
   final int movieId;
   final String title;
@@ -53,12 +58,17 @@ class PosterCard extends StatelessWidget {
       style: titleStyle,
     );
 
+    // Le badge de note est décrit par le libellé ; un bouton personnalisé
+    // (retrait des favoris) reste accessible séparément.
     final badge =
-        topRight ?? (rating == null ? null : RatingBadge(rating: rating!));
+        topRight ??
+        (rating == null
+            ? null
+            : ExcludeSemantics(child: RatingBadge(rating: rating!)));
 
     return Semantics(
       button: onTap != null,
-      label: title,
+      label: semanticLabel ?? context.l10n.movieSummary(title, rating: rating),
       child: SizedBox(
         width: width,
         child: AspectRatio(
@@ -77,17 +87,18 @@ class PosterCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (url == null)
-                    placeholder
-                  else
-                    CachedNetworkImage(
-                      imageUrl: url,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 360,
-                      fadeInDuration: const Duration(milliseconds: 200),
-                      placeholder: (_, _) => placeholder,
-                      errorWidget: (_, _, _) => placeholder,
-                    ),
+                  ExcludeSemantics(
+                    child: url == null
+                        ? placeholder
+                        : CachedNetworkImage(
+                            imageUrl: url,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 360,
+                            fadeInDuration: const Duration(milliseconds: 200),
+                            placeholder: (_, _) => placeholder,
+                            errorWidget: (_, _, _) => placeholder,
+                          ),
+                  ),
                   if (badge != null)
                     Positioned(
                       top: AppDimensions.sm,

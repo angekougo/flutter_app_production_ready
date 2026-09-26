@@ -626,4 +626,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get languageEnglish => 'English';
+
+  @override
+  String a11yRating(String rating) {
+    return 'note $rating sur 10';
+  }
+
+  @override
+  String a11yFeatured(String summary) {
+    return 'N°1 des tendances : $summary';
+  }
+
+  @override
+  String a11yCastMember(String name, String character) {
+    return '$name, dans le rôle de $character';
+  }
+
+  @override
+  String get a11yLoading => 'Chargement en cours';
 }

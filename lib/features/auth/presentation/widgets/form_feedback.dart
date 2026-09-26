@@ -61,16 +61,30 @@ class AuthFooterLink extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text('$question ', style: AppTypography.body),
-          InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppDimensions.xs),
-              child: Text(
-                action,
-                style: AppTypography.button.copyWith(
-                  color: AppColors.projecteur,
-                  fontSize: 15,
+          // Cible tactile d'au moins 48 dp (recommandation Android/WCAG).
+          Semantics(
+            button: true,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: AppDimensions.minTapTarget,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.xs,
+                  ),
+                  child: Center(
+                    widthFactor: 1,
+                    child: Text(
+                      action,
+                      style: AppTypography.button.copyWith(
+                        color: AppColors.projecteur,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

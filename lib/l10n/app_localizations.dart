@@ -1111,6 +1111,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'English'**
   String get languageEnglish;
+
+  /// No description provided for @a11yRating.
+  ///
+  /// In fr, this message translates to:
+  /// **'note {rating} sur 10'**
+  String a11yRating(String rating);
+
+  /// No description provided for @a11yFeatured.
+  ///
+  /// In fr, this message translates to:
+  /// **'N°1 des tendances : {summary}'**
+  String a11yFeatured(String summary);
+
+  /// No description provided for @a11yCastMember.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name}, dans le rôle de {character}'**
+  String a11yCastMember(String name, String character);
+
+  /// No description provided for @a11yLoading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chargement en cours'**
+  String get a11yLoading;
 }
 
 class _AppLocalizationsDelegate
