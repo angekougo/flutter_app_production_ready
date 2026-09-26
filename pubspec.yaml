@@ -1,7 +1,7 @@
 name: flutter_app_production_ready
-description: "Cinéthèque — découverte cinématographique (TMDB, Supabase Auth, Isar)."
+description: "Cinéthèque — découverte de films (TMDB, Supabase Auth, Isar), hors ligne, FR/EN, accessible."
 publish_to: 'none'
-version: 0.1.0+1
+version: 2.0.0+3
 
 environment:
   sdk: ^3.13.3

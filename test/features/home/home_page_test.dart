@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/finders.dart';
 import '../../helpers/test_app.dart';
 
 class _StaticNetworkInfo implements NetworkInfo {
@@ -83,7 +84,7 @@ void main() {
 
     expect(find.textContaining(', AWA'), findsOneWidget);
     expect(find.text('N°1 DES TENDANCES'), findsOneWidget);
-    expect(find.text('2024 · DRAME · ★ 8,2'), findsOneWidget);
+    expect(findStarText('2024 · DRAME · ★ 8,2'), findsOneWidget);
     expect(find.text('Populaires'), findsOneWidget);
     expect(find.text('Nouveautés'), findsOneWidget);
     expect(

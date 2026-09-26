@@ -124,6 +124,13 @@ jobs:
                  missed_frame_build_budget_count}' build/scrolling_summary.json
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          # Résumé aussi publié en annotation (visible sur la page du run).
+          echo "::notice title=Performance du défilement::$(jq -c '{
+            images: .frame_count,
+            construction_moyenne_ms: .average_frame_build_time_millis,
+            construction_p90_ms: ."90th_percentile_frame_build_time_millis",
+            construction_p99_ms: ."99th_percentile_frame_build_time_millis",
+            hors_budget: .missed_frame_build_budget_count}' build/scrolling_summary.json)"
 
       - uses: actions/upload-artifact@v7
         if: always()

@@ -6,6 +6,7 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/poster_card.dart';
 import '../../../../shared/widgets/skeleton.dart';
+import '../../../../shared/widgets/star_text.dart';
 import '../../domain/entities/movie.dart';
 
 /// Ligne de résultat : vignette, titre, « 2025 · Thriller », « ★ 6,8 », ›.
@@ -78,7 +79,7 @@ class SearchResultTile extends StatelessWidget {
                     ],
                     if (movie.hasRating) ...[
                       const SizedBox(height: AppDimensions.xs),
-                      Text(
+                      StarText(
                         '★ ${context.l10n.rating(movie.voteAverage)}',
                         style: AppTypography.meta.copyWith(
                           color: AppColors.projecteur,

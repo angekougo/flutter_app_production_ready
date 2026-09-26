@@ -32,10 +32,13 @@ import '../../test/helpers/fake_movie_repository.dart';
 /// navigation) tourne sans réseau, sans Supabase ni TMDB. Les parcours sont
 /// ainsi reproductibles en CI.
 class FakeBackend {
-  FakeBackend({bool signedIn = false})
-    : auth = FakeAuthRepository(signedIn: signedIn),
-      movies = _catalog(),
-      favorites = FakeFavoritesRepository();
+  FakeBackend({
+    bool signedIn = false,
+    FakeMovieRepository? movies,
+    FakeFavoritesRepository? favorites,
+  }) : auth = FakeAuthRepository(signedIn: signedIn),
+       movies = movies ?? _catalog(),
+       favorites = favorites ?? FakeFavoritesRepository();
 
   final FakeAuthRepository auth;
   final FakeMovieRepository movies;

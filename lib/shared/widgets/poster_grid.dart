@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_dimensions.dart';
 import '../../app/theme/app_typography.dart';
 import 'poster_card.dart';
+import 'star_text.dart';
 
 /// Grille d'affiches à 3 colonnes (« Tout voir », filmographie).
 ///
@@ -126,7 +127,7 @@ class PosterGridItem extends StatelessWidget {
         ),
         if (caption.isNotEmpty)
           ExcludeSemantics(
-            child: Text(
+            child: StarText(
               caption,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

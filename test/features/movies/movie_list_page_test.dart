@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/finders.dart';
 import '../../helpers/test_app.dart';
 
 void main() {
@@ -57,7 +58,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('2026 · ★ 7,9'), findsWidgets);
+        expect(findStarText('2026 · ★ 7,9'), findsWidgets);
         expect(tester.takeException(), isNull);
       },
     );

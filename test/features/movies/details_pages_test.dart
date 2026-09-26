@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/finders.dart';
 import '../../helpers/test_app.dart';
 
 /// Simule un bug imprévu (erreur qui n'est pas un Failure).
@@ -89,7 +90,7 @@ void main() {
       expect(find.text('The Last Projectionist'), findsOneWidget);
       expect(find.text('12.03.24'), findsOneWidget);
       expect(find.text('1H58'), findsOneWidget);
-      expect(find.text('★ 8,2'), findsOneWidget);
+      expect(findStarText('★ 8,2'), findsOneWidget);
       expect(find.text('91,4'), findsOneWidget);
       expect(find.text('Comédie dramatique'), findsOneWidget);
       expect(find.text('Ajouter aux favoris'), findsOneWidget);

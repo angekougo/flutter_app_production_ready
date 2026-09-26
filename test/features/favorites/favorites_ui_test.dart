@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/fake_favorites_repository.dart';
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/finders.dart';
 import '../../helpers/test_app.dart';
 
 const awa = AppUser(
@@ -120,7 +121,7 @@ void main() {
           .where((t) => t == 'Marée Basse' || t == 'Saison Sèche')
           .toList();
       expect(titles.first, 'Saison Sèche');
-      expect(find.text('2024 · ★ 8,2'), findsNWidgets(2));
+      expect(findStarText('2024 · ★ 8,2'), findsNWidgets(2));
     });
 
     testWidgets('état vide', (tester) async {

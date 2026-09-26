@@ -7,6 +7,7 @@ import '../../app/theme/app_typography.dart';
 import '../../core/network/api_constants.dart';
 import '../extensions/image_x.dart';
 import '../extensions/l10n_x.dart';
+import 'star_text.dart';
 
 /// Affiche d'un film (ratio 2:3).
 ///
@@ -170,7 +171,7 @@ class RatingBadge extends StatelessWidget {
         color: const Color(0xE6120F0C),
         borderRadius: BorderRadius.circular(AppDimensions.radiusSm - 2),
       ),
-      child: Text(
+      child: StarText(
         '★ ${context.l10n.rating(rating)}',
         style: AppTypography.meta.copyWith(
           color: AppColors.projecteur,

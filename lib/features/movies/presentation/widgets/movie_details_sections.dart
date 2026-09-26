@@ -10,6 +10,7 @@ import '../../../../shared/extensions/image_x.dart';
 import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/person_avatar.dart';
 import '../../../../shared/widgets/poster_card.dart';
+import '../../../../shared/widgets/star_text.dart';
 import '../../domain/entities/movie.dart';
 import '../../domain/entities/movie_details.dart';
 
@@ -171,9 +172,19 @@ class MovieStatsBar extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppTypography.overline.copyWith(fontSize: 11)),
+            // Une seule ligne : un libellé long (« POPULARITÉ ») est réduit
+            // plutôt que coupé en deux sur les écrans étroits.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: AppTypography.overline.copyWith(fontSize: 11),
+              ),
+            ),
             const SizedBox(height: AppDimensions.sm),
-            Text(
+            StarText(
               value,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

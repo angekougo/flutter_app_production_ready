@@ -7,6 +7,7 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/network/api_constants.dart';
 import '../../../../shared/extensions/image_x.dart';
 import '../../../../shared/extensions/l10n_x.dart';
+import '../../../../shared/widgets/star_text.dart';
 import '../../../movies/domain/entities/movie.dart';
 
 /// Carte « N°1 DES TENDANCES » en tête de l'accueil.
@@ -123,7 +124,7 @@ class FeaturedMovieCard extends StatelessWidget {
                         ),
                         if (meta.isNotEmpty) ...[
                           const SizedBox(height: AppDimensions.sm),
-                          Text(
+                          StarText(
                             meta,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

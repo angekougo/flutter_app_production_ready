@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/finders.dart';
 import '../../helpers/test_app.dart';
 
 void main() {
@@ -55,7 +56,7 @@ void main() {
     expect(find.text('PAGE 1 SUR 1'), findsOneWidget);
     expect(find.text('Nuit d’Encre'), findsOneWidget);
     expect(find.text('2025 · Thriller'), findsOneWidget);
-    expect(find.text('★ 6,8'), findsOneWidget);
+    expect(findStarText('★ 6,8'), findsOneWidget);
   });
 
   testWidgets('aucun résultat : message dédié', (tester) async {

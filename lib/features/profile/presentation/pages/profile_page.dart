@@ -344,34 +344,41 @@ class _InfoCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       vertical: AppDimensions.lg,
                     ),
-                    child: Row(
-                      children: [
-                        // Libellé souple : il passe à la ligne plutôt que de
-                        // déborder sur les petits écrans ou en grande police.
-                        Flexible(
-                          child: Text(
-                            row.label,
-                            style: AppTypography.body.copyWith(height: 1.3),
-                          ),
-                        ),
-                        const SizedBox(width: AppDimensions.md),
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: DefaultTextStyle.merge(
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
-                              child: row.value,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) => Row(
+                        children: [
+                          // Libellé à sa largeur naturelle, plafonnée : il
+                          // passe à la ligne plutôt que de déborder (petits
+                          // écrans, grande police). La valeur prend le reste,
+                          // alignée à droite.
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: constraints.maxWidth * 0.55,
+                            ),
+                            child: Text(
+                              row.label,
+                              style: AppTypography.body.copyWith(height: 1.3),
                             ),
                           ),
-                        ),
-                        if (row.onTap != null)
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.poussiere,
+                          const SizedBox(width: AppDimensions.md),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: DefaultTextStyle.merge(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                                child: row.value,
+                              ),
+                            ),
                           ),
-                      ],
+                          if (row.onTap != null)
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColors.poussiere,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
