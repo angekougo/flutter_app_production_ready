@@ -47,6 +47,10 @@ class FakeBackend {
     Locale device = const Locale('fr'),
   }) async {
     GoogleFonts.config.allowRuntimeFetching = false;
+    // Le binding d'intégration laisse le vrai clavier du système actif :
+    // `enterText` enverrait alors le texte à une connexion de saisie
+    // périmée dès que le focus change. On active le clavier simulé.
+    if (!tester.testTextInput.isRegistered) tester.testTextInput.register();
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 

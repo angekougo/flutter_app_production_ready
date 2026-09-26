@@ -44,6 +44,7 @@ Future<void> favoriteJourney(WidgetTester tester) async {
 
   // 2. Bon mot de passe : le routeur ouvre l'accueil.
   await tester.enterText(fields.at(1), FakeAuthRepository.password);
+  expect(find.text(FakeAuthRepository.email), findsOneWidget);
   await _tapVisible(tester, find.text('Se connecter'));
   await tester.pumpUntilFound(find.byType(NavigationBar));
   await tester.pumpUntilFound(find.text('N°1 DES TENDANCES'));
