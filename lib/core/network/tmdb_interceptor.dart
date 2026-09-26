@@ -1,25 +1,23 @@
 import 'package:dio/dio.dart';
 
-import '../constants/app_constants.dart';
-
 /// Authentifie l'**application** auprès de TMDB (Bearer « API Read Access
-/// Token ») et ajoute la langue/région par défaut à chaque requête.
+/// Token ») et ajoute la langue des contenus à chaque requête.
 ///
 /// À ne pas confondre avec `AuthInterceptor`, qui injecte le JWT Supabase de
 /// l'**utilisateur** connecté.
 class TmdbInterceptor extends Interceptor {
-  TmdbInterceptor(this._readToken);
+  TmdbInterceptor(this._readToken, {required this.language});
 
   final String _readToken;
+
+  /// Langue TMDB (ex. « fr-FR »), sauf si la requête en précise une.
+  final String language;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     options.headers['Authorization'] = 'Bearer $_readToken';
     options.headers['Accept'] = 'application/json';
-    options.queryParameters.putIfAbsent(
-      'language',
-      () => AppConstants.tmdbLanguage,
-    );
+    options.queryParameters.putIfAbsent('language', () => language);
     handler.next(options);
   }
 }

@@ -133,7 +133,7 @@ void main() {
 
     expect(
       (result as Error).failure,
-      const NotFoundFailure('Acteur introuvable.'),
+      const NotFoundFailure(NotFoundResource.actor),
     );
   });
 }

@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_app_production_ready/app/app.dart';
+import 'package:flutter_app_production_ready/core/l10n/locale_providers.dart';
 import 'package:flutter_app_production_ready/core/network/network_info.dart';
 import 'package:flutter_app_production_ready/core/providers/core_providers.dart';
 import 'package:flutter_app_production_ready/features/auth/domain/entities/app_user.dart';
@@ -11,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/fake_movie_repository.dart';
 
@@ -35,6 +38,8 @@ void main() {
     final repository = _MockAuthRepository();
     when(() => repository.currentUser).thenAnswer((_) => current);
     when(repository.watchAuthState).thenAnswer((_) => session.stream);
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
 
     await tester.pumpWidget(
       ProviderScope(
@@ -43,6 +48,8 @@ void main() {
           authRepositoryProvider.overrideWithValue(repository),
           networkInfoProvider.overrideWithValue(_OnlineNetworkInfo()),
           movieRepositoryProvider.overrideWithValue(FakeMovieRepository()),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          deviceLocalesProvider.overrideWithValue(const [Locale('fr')]),
         ],
         child: const CinethequeApp(),
       ),

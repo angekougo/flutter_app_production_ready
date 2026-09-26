@@ -71,9 +71,10 @@ void main() {
 
       final result = await repository.getProfile();
 
-      final failure = (result as Error).failure;
-      expect(failure, isA<UnauthorizedFailure>());
-      expect(failure.message, 'Votre session a expiré.');
+      expect(
+        (result as Error).failure,
+        const UnauthorizedFailure(UnauthorizedReason.sessionExpired),
+      );
     },
   );
 

@@ -5,7 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/network/api_constants.dart';
-import '../../../../shared/extensions/format_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../movies/domain/entities/movie.dart';
 
 /// Carte « N°1 DES TENDANCES » en tête de l'accueil.
@@ -28,7 +28,7 @@ class FeaturedMovieCard extends StatelessWidget {
     final meta = [
       if (movie.year != null) '${movie.year}',
       if (genreName != null) genreName!.toUpperCase(),
-      if (movie.hasRating) '★ ${movie.voteAverage.asRating}',
+      if (movie.hasRating) '★ ${context.l10n.rating(movie.voteAverage)}',
     ].join(' · ');
 
     return Padding(
@@ -86,7 +86,7 @@ class FeaturedMovieCard extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'N°1 DES TENDANCES',
+                          context.l10n.featuredBadge,
                           style: AppTypography.overline.copyWith(
                             color: AppColors.projecteur,
                           ),

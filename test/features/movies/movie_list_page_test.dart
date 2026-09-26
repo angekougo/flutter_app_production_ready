@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/test_app.dart';
 
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
@@ -49,8 +50,8 @@ void main() {
                 FakeMovieRepository(movies: {MovieCategory.popular: movies}),
               ),
             ],
-            child: const MaterialApp(
-              home: MovieListPage(category: MovieCategory.popular),
+            child: testApp(
+              const MovieListPage(category: MovieCategory.popular),
             ),
           ),
         );

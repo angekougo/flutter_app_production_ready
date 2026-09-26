@@ -9,6 +9,7 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../providers/auth_providers.dart';
 
 /// Vérifie la session restaurée et l'état du réseau, puis redirige vers
@@ -62,10 +63,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
             children: [
               Text(AppConstants.appName, style: AppTypography.display),
               const SizedBox(height: AppDimensions.md),
-              Text(
-                'Le cinéma, même hors connexion.',
-                style: AppTypography.originalTitle,
-              ),
+              Text(context.l10n.appTagline, style: AppTypography.originalTitle),
             ],
           ),
         ),

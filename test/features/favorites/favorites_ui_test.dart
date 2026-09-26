@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_production_ready/core/error/failures.dart';
+import 'package:flutter_app_production_ready/core/l10n/locale_providers.dart';
 import 'package:flutter_app_production_ready/core/result/result.dart';
 import 'package:flutter_app_production_ready/features/auth/domain/entities/app_user.dart';
 import 'package:flutter_app_production_ready/features/auth/presentation/providers/auth_providers.dart';
@@ -17,9 +18,11 @@ import 'package:flutter_app_production_ready/features/profile/presentation/provi
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/fake_favorites_repository.dart';
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/test_app.dart';
 
 const awa = AppUser(
   id: 'awa',
@@ -77,18 +80,21 @@ void main() {
     tester.view.physicalSize = const Size(1170, 4200);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(
       ProviderScope(
         retry: (_, _) => null,
         overrides: [
           currentUserProvider.overrideWithValue(awa),
+          sharedPreferencesProvider.overrideWithValue(prefs),
           authStateProvider.overrideWithValue(const AsyncData(awa)),
           favoritesRepositoryProvider.overrideWithValue(favorites),
           if (movies != null) movieRepositoryProvider.overrideWithValue(movies),
           if (profile != null)
             profileRepositoryProvider.overrideWithValue(profile),
         ],
-        child: MaterialApp(home: page),
+        child: testApp(page),
       ),
     );
     await tester.pumpAndSettle();

@@ -6,6 +6,7 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/network/api_constants.dart';
 import '../../../../shared/extensions/format_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/person_avatar.dart';
 import '../../../../shared/widgets/poster_card.dart';
 import '../../domain/entities/movie.dart';
@@ -145,6 +146,7 @@ class MovieStatsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final valueStyle = AppTypography.meta.copyWith(
       color: AppColors.papier,
       fontSize: 15,
@@ -177,14 +179,21 @@ class MovieStatsBar extends StatelessWidget {
         ),
         child: Row(
           children: [
-            stat('SORTIE', movie.releaseDate?.asShortDate ?? '—'),
-            stat('DURÉE', runtime?.asRuntime ?? '—'),
             stat(
-              'NOTE',
-              movie.hasRating ? '★ ${movie.voteAverage.asRating}' : '—',
+              l10n.statRelease,
+              movie.releaseDate == null
+                  ? l10n.notAvailable
+                  : l10n.shortDate(movie.releaseDate!),
+            ),
+            stat(l10n.statRuntime, runtime?.asRuntime ?? l10n.notAvailable),
+            stat(
+              l10n.statRating,
+              movie.hasRating
+                  ? '★ ${l10n.rating(movie.voteAverage)}'
+                  : l10n.notAvailable,
               color: movie.hasRating ? AppColors.projecteur : null,
             ),
-            stat('POPULARITÉ', movie.popularity.asPopularity),
+            stat(l10n.statPopularity, l10n.popularity(movie.popularity)),
           ],
         ),
       ),

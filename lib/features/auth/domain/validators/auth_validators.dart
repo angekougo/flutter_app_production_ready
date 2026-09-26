@@ -1,49 +1,64 @@
+/// Erreur de saisie d'un formulaire d'authentification. Le texte affiché est
+/// choisi par la présentation, dans la langue de l'utilisateur.
+enum AuthValidationError {
+  emailRequired,
+  emailInvalid,
+  passwordRequired,
+  newPasswordRequired,
+  passwordTooShort,
+  confirmationRequired,
+  confirmationMismatch,
+}
+
 /// Règles de validation des formulaires d'authentification (Dart pur,
-/// testables sans Flutter). Chaque méthode renvoie un message ou `null`.
+/// testables sans Flutter). Chaque méthode renvoie une erreur ou `null`.
 abstract final class AuthValidators {
   static const minPasswordLength = 8;
 
   static final _emailRegExp = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$');
 
-  static String? email(String? value) {
+  static AuthValidationError? email(String? value) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return 'Saisissez votre email.';
-    if (!_emailRegExp.hasMatch(v)) return 'Adresse email invalide.';
+    if (v.isEmpty) return AuthValidationError.emailRequired;
+    if (!_emailRegExp.hasMatch(v)) return AuthValidationError.emailInvalid;
     return null;
   }
 
   /// Connexion : on ne vérifie que la présence du mot de passe.
-  static String? requiredPassword(String? value) =>
-      (value == null || value.isEmpty) ? 'Saisissez votre mot de passe.' : null;
+  static AuthValidationError? requiredPassword(String? value) =>
+      (value == null || value.isEmpty)
+      ? AuthValidationError.passwordRequired
+      : null;
 
-  static String? newPassword(String? value) {
+  static AuthValidationError? newPassword(String? value) {
     final v = value ?? '';
-    if (v.isEmpty) return 'Choisissez un mot de passe.';
+    if (v.isEmpty) return AuthValidationError.newPasswordRequired;
     if (v.length < minPasswordLength) {
-      return '$minPasswordLength caractères minimum.';
+      return AuthValidationError.passwordTooShort;
     }
     return null;
   }
 
-  static String? confirmation(String? value, String password) {
-    if (value == null || value.isEmpty) return 'Confirmez le mot de passe.';
-    if (value != password) return 'Les mots de passe ne correspondent pas.';
+  static AuthValidationError? confirmation(String? value, String password) {
+    if (value == null || value.isEmpty) {
+      return AuthValidationError.confirmationRequired;
+    }
+    if (value != password) return AuthValidationError.confirmationMismatch;
     return null;
   }
 }
 
 enum PasswordStrength {
-  empty(0, ''),
-  weak(1, 'faible'),
-  fair(2, 'moyenne'),
-  good(3, 'correcte'),
-  strong(4, 'forte');
+  empty(0),
+  weak(1),
+  fair(2),
+  good(3),
+  strong(4);
 
-  const PasswordStrength(this.score, this.label);
+  const PasswordStrength(this.score);
 
   /// Nombre de segments allumés sur 4.
   final int score;
-  final String label;
 
   static PasswordStrength evaluate(String password) {
     if (password.isEmpty) return empty;

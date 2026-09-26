@@ -37,9 +37,9 @@ class ActorRepositoryImpl implements ActorRepository {
         );
       },
     );
-    // Le message par défaut (« Film introuvable. ») ne convient pas ici.
+    // La ressource par défaut (un film) ne convient pas ici.
     if (result case Error(failure: NotFoundFailure())) {
-      return const Error(NotFoundFailure('Acteur introuvable.'));
+      return const Error(NotFoundFailure(NotFoundResource.actor));
     }
     return result;
   }

@@ -14,6 +14,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_dotenv: ^6.0.1
+  flutter_localizations:
+    sdk: flutter
   flutter_riverpod: ^3.4.3
   flutter_secure_storage: ^11.2.0
   go_router: ^18.0.1
@@ -22,6 +24,7 @@ dependencies:
   isar_community: ^3.3.2
   isar_community_flutter_libs: ^3.3.2
   path_provider: ^2.1.6
+  shared_preferences: ^2.5.5
   supabase_flutter: ^2.17.2
 
 dev_dependencies:
@@ -34,6 +37,7 @@ dev_dependencies:
   fake_async: ^1.3.3
 
 flutter:
+  generate: true
   uses-material-design: true
   assets:
     - .env

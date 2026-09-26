@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/error/failures.dart' show AuthErrorReason;
 import '../models/user_model.dart';
 
 abstract interface class AuthRemoteDataSource {
@@ -47,7 +48,9 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
           password: password,
         );
         final user = response.user;
-        if (user == null) throw const AuthException();
+        if (user == null) {
+          throw const AuthException(AuthErrorReason.invalidCredentials);
+        }
         return UserModel.fromSupabase(user);
       });
 
@@ -68,7 +71,7 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
     // Avec la confirmation email activée, Supabase ne révèle pas qu'un email
     // est déjà inscrit : il renvoie un utilisateur sans identité.
     if (response.session == null && (user.identities?.isEmpty ?? false)) {
-      throw const AuthException(_Messages.userAlreadyExists);
+      throw const AuthException(AuthErrorReason.userAlreadyExists);
     }
     return (
       user: UserModel.fromSupabase(user),
@@ -96,7 +99,7 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
     } on sb.AuthRetryableFetchException catch (e) {
       throw NetworkException(e.message);
     } on sb.AuthException catch (e) {
-      throw AuthException(_messageFor(e));
+      throw AuthException(_reasonFor(e), e.message);
     } on Object catch (e) {
       if (_isNetworkError(e)) throw NetworkException(e.toString());
       rethrow;
@@ -112,23 +115,17 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
         text.contains('Connection');
   }
 
-  static String _messageFor(sb.AuthException e) => switch (e.code) {
-    'invalid_credentials' => _Messages.invalidCredentials,
-    'email_not_confirmed' => _Messages.emailNotConfirmed,
-    'user_already_exists' || 'email_exists' => _Messages.userAlreadyExists,
-    'weak_password' => 'Mot de passe trop faible (8 caractères minimum).',
-    'email_address_invalid' => 'Adresse email invalide.',
-    'over_email_send_rate_limit' || 'over_request_rate_limit' =>
-      'Trop de tentatives. Réessayez dans quelques minutes.',
-    'signup_disabled' => 'Les inscriptions sont désactivées.',
-    _ when e.statusCode == '400' => _Messages.invalidCredentials,
-    _ => 'Authentification impossible. Réessayez.',
+  static AuthErrorReason _reasonFor(sb.AuthException e) => switch (e.code) {
+    'invalid_credentials' => AuthErrorReason.invalidCredentials,
+    'email_not_confirmed' => AuthErrorReason.emailNotConfirmed,
+    'user_already_exists' ||
+    'email_exists' => AuthErrorReason.userAlreadyExists,
+    'weak_password' => AuthErrorReason.weakPassword,
+    'email_address_invalid' => AuthErrorReason.invalidEmail,
+    'over_email_send_rate_limit' ||
+    'over_request_rate_limit' => AuthErrorReason.rateLimited,
+    'signup_disabled' => AuthErrorReason.signupDisabled,
+    _ when e.statusCode == '400' => AuthErrorReason.invalidCredentials,
+    _ => AuthErrorReason.unknown,
   };
-}
-
-abstract final class _Messages {
-  static const invalidCredentials = 'Email ou mot de passe incorrect.';
-  static const emailNotConfirmed =
-      'Confirmez votre adresse email avant de vous connecter.';
-  static const userAlreadyExists = 'Un compte existe déjà avec cet email.';
 }

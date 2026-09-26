@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
 import '../../app/theme/app_typography.dart';
-import '../extensions/date_time_x.dart';
+import '../extensions/l10n_x.dart';
 
 /// Bannière « Hors connexion — affichage des dernières données disponibles. »
 class OfflineBanner extends StatelessWidget {
@@ -14,6 +14,7 @@ class OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.lg),
@@ -32,7 +33,7 @@ class OfflineBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hors connexion — affichage des dernières données disponibles.',
+                  l10n.offlineBanner,
                   style: AppTypography.bodyStrong.copyWith(
                     fontWeight: FontWeight.w500,
                     height: 1.4,
@@ -41,7 +42,7 @@ class OfflineBanner extends StatelessWidget {
                 if (cachedAt != null) ...[
                   const SizedBox(height: AppDimensions.xs),
                   Text(
-                    'MISES À JOUR ${cachedAt!.timeAgo().toUpperCase()}',
+                    l10n.offlineUpdated(l10n.timeAgo(cachedAt!).toUpperCase()),
                     style: AppTypography.overline.copyWith(
                       color: AppColors.nuit,
                     ),

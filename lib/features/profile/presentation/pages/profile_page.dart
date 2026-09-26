@@ -5,42 +5,51 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/l10n/locale_providers.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/extensions/async_value_x.dart';
-import '../../../../shared/extensions/date_time_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../auth/presentation/providers/auth_controllers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../domain/entities/profile_entities.dart';
 import '../providers/profile_providers.dart';
+import '../widgets/language_picker.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
-    // Capturé avant l'appel : l'écran sera quitté pendant la déconnexion.
+    // Capturés avant l'appel : l'écran sera quitté pendant la déconnexion.
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     final result = await ref.read(logoutControllerProvider.notifier).logout();
     result.when(
-      success: (_) =>
-          showAppSnackBar(messenger, 'Vous êtes déconnecté. À bientôt !'),
-      failure: (failure) =>
-          showAppSnackBar(messenger, failure.message, tone: SnackTone.error),
+      success: (_) => showAppSnackBar(messenger, l10n.logoutSuccess),
+      failure: (failure) => showAppSnackBar(
+        messenger,
+        l10n.failureMessage(failure),
+        tone: SnackTone.error,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final user = ref.watch(currentUserProvider);
     final profile = ref.watch(profileProvider);
     final session = ref.watch(sessionInfoProvider);
     final stats = ref.watch(offlineStatsProvider).value;
     final now = ref.watch(clockProvider).value ?? DateTime.now();
     final isLoggingOut = ref.watch(logoutControllerProvider).isLoading;
+    final chosenLocale = ref.watch(localeControllerProvider);
 
     final account = profile.value?.data;
     final sessionExpired = profile.failure is UnauthorizedFailure;
     final email = account?.email ?? user?.email ?? '';
     final displayName = user?.displayName ?? email;
+    final memberSince = account?.createdAt ?? user?.createdAt;
 
     return Scaffold(
       body: SafeArea(
@@ -65,7 +74,7 @@ class ProfilePage extends ConsumerWidget {
               AppDimensions.xxl,
             ),
             children: [
-              Text('Profil', style: AppTypography.screenTitle),
+              Text(l10n.profileTitle, style: AppTypography.screenTitle),
               const SizedBox(height: AppDimensions.xl),
               _Identity(
                 initials: user?.initials ?? '?',
@@ -78,13 +87,15 @@ class ProfilePage extends ConsumerWidget {
                 const SizedBox(height: AppDimensions.lg),
               ],
               _InfoCard(
-                title: 'COMPTE',
+                title: l10n.profileAccount,
                 rows: [
-                  _InfoRow('Email', Text(email, style: _valueStyle)),
+                  _InfoRow(l10n.profileEmail, Text(email, style: _valueStyle)),
                   _InfoRow(
-                    'Membre depuis',
+                    l10n.profileMemberSince,
                     Text(
-                      _memberSince(account?.createdAt ?? user?.createdAt),
+                      memberSince == null
+                          ? l10n.notAvailable
+                          : l10n.monthYear(memberSince).toUpperCase(),
                       style: _monoValueStyle,
                     ),
                   ),
@@ -92,46 +103,65 @@ class ProfilePage extends ConsumerWidget {
               ),
               const SizedBox(height: AppDimensions.lg),
               _InfoCard(
-                title: 'SESSION',
+                title: l10n.profileSession,
                 rows: [
                   _InfoRow(
-                    'État',
+                    l10n.profileState,
                     _SessionState(
                       active: !sessionExpired && session.isActive(now),
                     ),
                   ),
                   _InfoRow(
-                    'Authentification',
+                    l10n.profileAuthentication,
                     Text(_providerLabel(account?.provider), style: _valueStyle),
                   ),
                   _InfoRow(
-                    'Jeton d’accès',
-                    Text(_tokenExpiry(session, now), style: _monoValueStyle),
+                    l10n.profileAccessToken,
+                    Text(
+                      _tokenExpiry(l10n, session, now),
+                      style: _monoValueStyle,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: AppDimensions.lg),
               _InfoCard(
-                title: 'DONNÉES HORS CONNEXION',
+                title: l10n.profileOfflineData,
                 rows: [
                   _InfoRow(
-                    'Films en cache',
+                    l10n.profileCachedMovies,
                     Text(
-                      '${stats?.cachedMovies ?? '—'}',
+                      '${stats?.cachedMovies ?? l10n.notAvailable}',
                       style: _monoValueStyle,
                     ),
                   ),
                   _InfoRow(
-                    'Favoris',
-                    Text('${stats?.favorites ?? '—'}', style: _monoValueStyle),
-                  ),
-                  _InfoRow(
-                    'Dernière mise à jour',
+                    l10n.profileFavorites,
                     Text(
-                      stats?.lastUpdate?.timeAgo(now: now).toUpperCase() ??
-                          'JAMAIS',
+                      '${stats?.favorites ?? l10n.notAvailable}',
                       style: _monoValueStyle,
                     ),
+                  ),
+                  _InfoRow(
+                    l10n.profileLastUpdate,
+                    Text(
+                      switch (stats?.lastUpdate) {
+                        final date? => l10n.timeAgo(date, now: now),
+                        null => l10n.profileNever,
+                      }.toUpperCase(),
+                      style: _monoValueStyle,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.lg),
+              _InfoCard(
+                title: l10n.profilePreferences,
+                rows: [
+                  _InfoRow(
+                    l10n.profileLanguage,
+                    Text(languageName(l10n, chosenLocale), style: _valueStyle),
+                    onTap: () => showLanguagePicker(context),
                   ),
                 ],
               ),
@@ -144,12 +174,11 @@ class ProfilePage extends ConsumerWidget {
                   minimumSize: const Size.fromHeight(56),
                 ),
                 icon: const Icon(Icons.logout_rounded),
-                label: const Text('Se déconnecter'),
+                label: Text(l10n.logout),
               ),
               const SizedBox(height: AppDimensions.xl),
               Text(
-                'Ce produit utilise l’API TMDB mais n’est ni approuvé ni '
-                'certifié par TMDB.',
+                l10n.tmdbDisclaimer,
                 textAlign: TextAlign.center,
                 style: AppTypography.caption,
               ),
@@ -172,29 +201,22 @@ TextStyle get _monoValueStyle => AppTypography.meta.copyWith(
   letterSpacing: 1,
 );
 
-const _months = [
-  'JANVIER', 'FÉVRIER', 'MARS', 'AVRIL', 'MAI', 'JUIN', //
-  'JUILLET', 'AOÛT', 'SEPTEMBRE', 'OCTOBRE', 'NOVEMBRE', 'DÉCEMBRE',
-];
-
-/// « MARS 2026 »
-String _memberSince(DateTime? date) =>
-    date == null ? '—' : '${_months[date.month - 1]} ${date.year}';
-
 String _providerLabel(String? provider) => switch (provider) {
   null || 'email' => 'Email · Supabase',
   final other => '${other[0].toUpperCase()}${other.substring(1)} · Supabase',
 };
 
 /// « EXPIRE DANS 52 MIN », « EXPIRE DANS 1 H 05 », « EXPIRÉ ».
-String _tokenExpiry(SessionInfo session, DateTime now) {
+String _tokenExpiry(AppLocalizations l10n, SessionInfo session, DateTime now) {
   final remaining = session.remaining(now);
-  if (remaining == null) return '—';
-  if (remaining.isNegative) return 'EXPIRÉ';
+  if (remaining == null) return l10n.notAvailable;
+  if (remaining.isNegative) return l10n.tokenExpired;
   final minutes = remaining.inMinutes;
-  if (minutes < 60) return 'EXPIRE DANS ${minutes.clamp(1, 59)} MIN';
-  return 'EXPIRE DANS ${minutes ~/ 60} H '
-      '${(minutes % 60).toString().padLeft(2, '0')}';
+  if (minutes < 60) return l10n.tokenExpiresInMinutes(minutes.clamp(1, 59));
+  return l10n.tokenExpiresInHours(
+    minutes ~/ 60,
+    (minutes % 60).toString().padLeft(2, '0'),
+  );
 }
 
 class _Identity extends StatelessWidget {
@@ -253,9 +275,12 @@ class _Identity extends StatelessWidget {
 }
 
 class _InfoRow {
-  const _InfoRow(this.label, this.value);
+  const _InfoRow(this.label, this.value, {this.onTap});
   final String label;
   final Widget value;
+
+  /// Ligne interactive (ex. choix de la langue) : chevron affiché.
+  final VoidCallback? onTap;
 }
 
 /// Carte « COMPTE / SESSION / DONNÉES HORS CONNEXION » à lignes séparées.
@@ -286,31 +311,39 @@ class _InfoCard extends StatelessWidget {
           ),
           for (final row in rows) ...[
             const Divider(),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppDimensions.lg),
-              child: Row(
-                children: [
-                  // Libellé souple : il passe à la ligne plutôt que de
-                  // déborder sur les petits écrans ou en grande police.
-                  Flexible(
-                    child: Text(
-                      row.label,
-                      style: AppTypography.body.copyWith(height: 1.3),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.md),
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: DefaultTextStyle.merge(
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
-                        child: row.value,
+            InkWell(
+              onTap: row.onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppDimensions.lg),
+                child: Row(
+                  children: [
+                    // Libellé souple : il passe à la ligne plutôt que de
+                    // déborder sur les petits écrans ou en grande police.
+                    Flexible(
+                      child: Text(
+                        row.label,
+                        style: AppTypography.body.copyWith(height: 1.3),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: AppDimensions.md),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: DefaultTextStyle.merge(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          child: row.value,
+                        ),
+                      ),
+                    ),
+                    if (row.onTap != null)
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.poussiere,
+                      ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -338,7 +371,7 @@ class _SessionState extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.sm),
         Text(
-          active ? 'Active' : 'Expirée',
+          active ? context.l10n.sessionActive : context.l10n.sessionExpired,
           style: AppTypography.bodyStrong.copyWith(color: color),
         ),
       ],
@@ -370,7 +403,7 @@ class _SessionExpiredCard extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              const UnauthorizedFailure().message,
+              context.l10n.failureSessionExpired,
               style: AppTypography.bodyStrong.copyWith(
                 fontWeight: FontWeight.w500,
               ),
@@ -378,7 +411,7 @@ class _SessionExpiredCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: onReconnect,
-            child: const Text('Se reconnecter'),
+            child: Text(context.l10n.reconnect),
           ),
         ],
       ),

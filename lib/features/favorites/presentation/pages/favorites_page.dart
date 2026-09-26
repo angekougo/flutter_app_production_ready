@@ -8,7 +8,7 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/result/result.dart';
 import '../../../../shared/extensions/async_value_x.dart';
-import '../../../../shared/extensions/format_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/poster_grid.dart';
 import '../../../../shared/widgets/skeleton.dart';
@@ -25,33 +25,37 @@ class FavoritesPage extends ConsumerWidget {
     Favorite favorite,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     final actions = ref.read(favoriteActionsProvider);
     final result = await actions.remove(favorite);
     switch (result) {
       case Success():
         showAppSnackBar(
           messenger,
-          '« ${favorite.title} » retiré des favoris.',
-          actionLabel: 'Annuler',
+          l10n.favoriteRemovedNamed(favorite.title),
+          actionLabel: l10n.undo,
           onAction: () => actions.restore(favorite),
         );
       case Error(:final failure):
-        showAppSnackBar(messenger, failure.message, tone: SnackTone.error);
+        showAppSnackBar(
+          messenger,
+          l10n.failureMessage(failure),
+          tone: SnackTone.error,
+        );
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final favorites = ref.watch(favoritesProvider);
+    final l10n = context.l10n;
 
     final Widget body = switch (favorites) {
       AsyncValue(:final value?) when value.isEmpty => StateMessageView(
         icon: Icons.favorite_border_rounded,
-        title: 'Aucun favori pour l’instant',
-        message:
-            'Touchez le cœur sur la fiche d’un film pour le garder ici. '
-            'Vos favoris restent accessibles sans connexion.',
-        primaryLabel: 'Découvrir des films',
+        title: l10n.favoritesEmptyTitle,
+        message: l10n.favoritesEmptyMessage,
+        primaryLabel: l10n.favoritesDiscover,
         onPrimary: () => context.go(RoutePaths.home),
         expandPrimary: false,
       ),
@@ -62,9 +66,9 @@ class FavoritesPage extends ConsumerWidget {
       AsyncValue(:final failure?) => StateMessageView(
         tone: StateTone.error,
         icon: Icons.favorite_border_rounded,
-        title: 'Impossible de charger vos favoris.',
-        message: failure.message,
-        primaryLabel: 'Réessayer',
+        title: l10n.favoritesLoadError,
+        message: l10n.failureMessage(failure),
+        primaryLabel: l10n.retry,
         onPrimary: () => ref.invalidate(favoritesProvider),
       ),
       _ => const _FavoritesSkeleton(),
@@ -83,7 +87,10 @@ class FavoritesPage extends ConsumerWidget {
                 AppDimensions.gutter,
                 0,
               ),
-              child: Text('Mes favoris', style: AppTypography.screenTitle),
+              child: Text(
+                l10n.favoritesTitle,
+                style: AppTypography.screenTitle,
+              ),
             ),
             Expanded(child: body),
           ],
@@ -123,8 +130,7 @@ class _FavoritesGrid extends StatelessWidget {
                 const SizedBox(width: AppDimensions.sm),
                 Expanded(
                   child: Text(
-                    '$count film${count > 1 ? 's' : ''} · '
-                    'disponible${count > 1 ? 's' : ''} hors connexion',
+                    context.l10n.favoritesOfflineCount(count),
                     style: AppTypography.body.copyWith(height: 1.3),
                   ),
                 ),
@@ -146,7 +152,7 @@ class _FavoritesGrid extends StatelessWidget {
                 caption: [
                   if (favorite.year != null) '${favorite.year}',
                   if (favorite.voteAverage > 0)
-                    '★ ${favorite.voteAverage.asRating}',
+                    '★ ${context.l10n.rating(favorite.voteAverage)}',
                 ].join(' · '),
                 onTap: () => context.push(
                   RoutePaths.movie(favorite.movieId),
@@ -172,7 +178,7 @@ class _RemoveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: 'Retirer des favoris',
+      tooltip: context.l10n.favoriteRemove,
       onPressed: onPressed,
       icon: const Icon(Icons.favorite_rounded, size: 22),
       style: IconButton.styleFrom(

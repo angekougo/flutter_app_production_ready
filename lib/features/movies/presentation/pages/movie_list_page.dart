@@ -7,7 +7,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../shared/extensions/async_value_x.dart';
-import '../../../../shared/extensions/format_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/offline_banner.dart';
 import '../../../../shared/widgets/poster_grid.dart';
 import '../../../../shared/widgets/skeleton.dart';
@@ -45,7 +45,7 @@ class _MovieListPageState extends ConsumerState<MovieListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.category.label,
+          context.l10n.categoryLabel(widget.category),
           style: AppTypography.section.copyWith(fontSize: 26),
         ),
         titleSpacing: 0,
@@ -63,9 +63,9 @@ class _MovieListPageState extends ConsumerState<MovieListPage> {
         AsyncValue(:final failure?) => StateMessageView(
           tone: StateTone.error,
           icon: Icons.movie_filter_outlined,
-          title: 'Impossible de charger les données.',
-          message: failure.message,
-          primaryLabel: 'Réessayer',
+          title: context.l10n.loadErrorTitle,
+          message: context.l10n.failureMessage(failure),
+          primaryLabel: context.l10n.retry,
           onPrimary: () => ref.invalidate(_provider),
         ),
         _ => const _GridSkeleton(),
@@ -111,7 +111,8 @@ class _Grid extends StatelessWidget {
                 posterPath: movie.posterPath,
                 caption: [
                   if (movie.year != null) '${movie.year}',
-                  if (movie.hasRating) '★ ${movie.voteAverage.asRating}',
+                  if (movie.hasRating)
+                    '★ ${context.l10n.rating(movie.voteAverage)}',
                 ].join(' · '),
                 onTap: () =>
                     context.push(RoutePaths.movie(movie.id), extra: movie),
@@ -145,16 +146,16 @@ class _Footer extends StatelessWidget {
       child = Column(
         children: [
           Text(
-            failure.message,
+            context.l10n.failureMessage(failure),
             textAlign: TextAlign.center,
             style: AppTypography.body.copyWith(color: AppColors.signal),
           ),
-          TextButton(onPressed: onRetry, child: const Text('Réessayer')),
+          TextButton(onPressed: onRetry, child: Text(context.l10n.retry)),
         ],
       );
     } else if (!state.hasMore) {
       child = Text(
-        'FIN DE LA LISTE · ${state.movies.length} FILMS',
+        context.l10n.listEnd(state.movies.length),
         style: AppTypography.overline,
       );
     } else {

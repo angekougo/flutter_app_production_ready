@@ -8,6 +8,7 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/extensions/async_value_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../domain/validators/auth_validators.dart';
 import '../providers/auth_controllers.dart';
@@ -53,14 +54,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if ((previous?.isLoading ?? false) && user != null) {
         showAppSnackBar(
           ScaffoldMessenger.of(context),
-          'Connexion réussie. Bonne séance, ${user.firstName} !',
+          context.l10n.loginSuccess(user.firstName),
           tone: SnackTone.success,
         );
       }
     });
 
     final state = ref.watch(loginControllerProvider);
-    final serverError = state.failureMessage;
+    final l10n = context.l10n;
+    final serverError = switch (state.failure) {
+      final failure? => l10n.failureMessage(failure),
+      null => null,
+    };
 
     return AuthScaffold(
       body: Form(
@@ -75,31 +80,33 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 style: AppTypography.section.copyWith(fontSize: 24),
               ),
               const SizedBox(height: 72),
-              Text('Bon retour.', style: AppTypography.display),
+              Text(l10n.loginWelcomeBack, style: AppTypography.display),
               const SizedBox(height: AppDimensions.md),
               Text(
-                'Connectez-vous pour retrouver vos films et vos favoris.',
+                l10n.loginSubtitle,
                 style: AppTypography.body.copyWith(fontSize: 16),
               ),
               const SizedBox(height: 40),
               LabeledTextField(
-                label: 'Email',
+                label: l10n.fieldEmail,
                 controller: _email,
-                hint: 'vous@exemple.com',
+                hint: l10n.fieldEmailHint,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
-                validator: AuthValidators.email,
+                validator: (v) =>
+                    l10n.validationMessage(AuthValidators.email(v)),
                 onChanged: _clearServerError,
               ),
               const SizedBox(height: AppDimensions.xl),
               LabeledTextField(
-                label: 'Mot de passe',
+                label: l10n.fieldPassword,
                 controller: _password,
                 isPassword: true,
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.password],
-                validator: AuthValidators.requiredPassword,
+                validator: (v) =>
+                    l10n.validationMessage(AuthValidators.requiredPassword(v)),
                 onChanged: _clearServerError,
                 onSubmitted: (_) => _submit(),
                 highlight: serverError != null ? AppColors.signal : null,
@@ -107,7 +114,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               if (serverError != null) FormErrorMessage(serverError),
               const SizedBox(height: AppDimensions.xxl),
               LoadingFilledButton(
-                label: 'Se connecter',
+                label: l10n.loginButton,
                 isLoading: state.isLoading,
                 onPressed: _submit,
               ),
@@ -116,8 +123,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ),
       ),
       footer: AuthFooterLink(
-        question: 'Pas encore de compte ?',
-        action: 'Créer un compte',
+        question: l10n.loginNoAccount,
+        action: l10n.registerTitle,
         onTap: () => context.push(RoutePaths.register),
       ),
     );

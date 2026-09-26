@@ -114,7 +114,3 @@ Future<void> refreshHome(WidgetRef ref) async {
       ref.read(p.future).then<void>((_) {}, onError: (Object _) {}),
   ]);
 }
-
-/// Salutation selon l'heure : « BONJOUR » ou « BONSOIR ».
-String greetingFor(DateTime now) =>
-    (now.hour >= 5 && now.hour < 18) ? 'Bonjour' : 'Bonsoir';

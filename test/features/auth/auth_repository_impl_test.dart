@@ -46,14 +46,14 @@ void main() {
     });
 
     test(
-      'identifiants invalides → AuthFailure avec le message du datasource',
+      'identifiants invalides → AuthFailure avec la cause du datasource',
       () async {
         when(
           () => remote.signIn(
             email: any(named: 'email'),
             password: any(named: 'password'),
           ),
-        ).thenThrow(const AuthException('Email ou mot de passe incorrect.'));
+        ).thenThrow(const AuthException(AuthErrorReason.invalidCredentials));
 
         final result = await repository.signIn(
           email: user.email,
@@ -62,7 +62,7 @@ void main() {
 
         expect(
           (result as Error).failure,
-          const AuthFailure('Email ou mot de passe incorrect.'),
+          const AuthFailure(AuthErrorReason.invalidCredentials),
         );
       },
     );

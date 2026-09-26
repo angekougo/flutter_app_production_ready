@@ -1,3 +1,5 @@
+import 'failures.dart' show AuthErrorReason;
+
 /// Exceptions techniques levées par la couche Data (DataSources).
 ///
 /// Elles ne remontent jamais jusqu'à la présentation : le Repository les
@@ -38,5 +40,7 @@ class CacheException extends AppException {
 
 /// Erreur fonctionnelle d'authentification (identifiants invalides…).
 class AuthException extends AppException {
-  const AuthException([super.message]);
+  const AuthException([this.reason = AuthErrorReason.unknown, String? message])
+    : super(message);
+  final AuthErrorReason reason;
 }

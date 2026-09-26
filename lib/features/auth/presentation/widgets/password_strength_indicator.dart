@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../domain/validators/auth_validators.dart';
 
 /// Quatre segments + « 8 caractères minimum · robustesse correcte ».
@@ -13,6 +14,7 @@ class PasswordStrengthIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final color = strength == PasswordStrength.weak
         ? AppColors.signal
         : AppColors.projecteur;
@@ -42,9 +44,9 @@ class PasswordStrengthIndicator extends StatelessWidget {
           const SizedBox(height: AppDimensions.sm),
           Text(
             [
-              '${AuthValidators.minPasswordLength} caractères minimum',
+              l10n.passwordMinLength(AuthValidators.minPasswordLength),
               if (strength != PasswordStrength.empty)
-                'robustesse ${strength.label}',
+                l10n.passwordStrengthLabel(strength),
             ].join(' · '),
             style: AppTypography.caption,
           ),

@@ -7,6 +7,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/offline_banner.dart';
 import '../../../../shared/widgets/state_message_view.dart';
 import '../../domain/usecases/movie_usecases.dart';
@@ -78,9 +79,15 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Recherche', style: AppTypography.screenTitle),
+                  Text(
+                    context.l10n.searchTitle,
+                    style: AppTypography.screenTitle,
+                  ),
                   const SizedBox(height: AppDimensions.lg),
-                  Text('TITRE DU FILM', style: AppTypography.overline),
+                  Text(
+                    context.l10n.searchFieldLabel,
+                    style: AppTypography.overline,
+                  ),
                   const SizedBox(height: AppDimensions.sm),
                   _SearchField(
                     controller: _text,
@@ -142,7 +149,7 @@ class _SearchField extends StatelessWidget {
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
-        hintText: 'Rechercher un film…',
+        hintText: context.l10n.searchHint,
         contentPadding: const EdgeInsets.symmetric(vertical: 18),
         prefixIcon: const Padding(
           padding: EdgeInsets.only(left: AppDimensions.lg, right: 6),
@@ -151,7 +158,7 @@ class _SearchField extends StatelessWidget {
         suffixIcon: controller.text.isEmpty
             ? null
             : IconButton(
-                tooltip: 'Effacer',
+                tooltip: context.l10n.searchClear,
                 onPressed: onClear,
                 icon: const Icon(Icons.close_rounded, color: AppColors.papier),
               ),
@@ -179,6 +186,7 @@ class _SearchBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(movieSearchProvider.notifier);
+    final l10n = context.l10n;
 
     switch (state.status) {
       case SearchStatus.idle:
@@ -197,32 +205,28 @@ class _SearchBody extends ConsumerWidget {
         if (failure is CacheFailure) {
           return StateMessageView(
             icon: Icons.wifi_off_rounded,
-            title: 'Recherche indisponible hors connexion',
-            message:
-                'Cette recherche n’a pas encore été effectuée : '
-                'aucun résultat n’est disponible hors ligne.',
-            primaryLabel: 'Réessayer',
+            title: l10n.searchOfflineTitle,
+            message: l10n.searchOfflineMessage,
+            primaryLabel: l10n.retry,
             onPrimary: notifier.retry,
-            secondaryLabel: 'Voir mes favoris',
+            secondaryLabel: l10n.seeMyFavorites,
             onSecondary: () => context.go(RoutePaths.favorites),
           );
         }
         return StateMessageView(
           tone: StateTone.error,
           icon: Icons.movie_filter_outlined,
-          title: 'La recherche a échoué',
-          message: failure.message,
-          primaryLabel: 'Réessayer',
+          title: l10n.searchFailedTitle,
+          message: l10n.failureMessage(failure),
+          primaryLabel: l10n.retry,
           onPrimary: notifier.retry,
         );
 
       case SearchStatus.success when state.movies.isEmpty:
         return StateMessageView(
           icon: Icons.search_off_rounded,
-          title: 'Aucun résultat',
-          message:
-              'Aucun film ne correspond à « ${state.query.trim()} ». '
-              'Vérifiez l’orthographe ou essayez un autre titre.',
+          title: l10n.searchNoResultsTitle,
+          message: l10n.searchNoResultsMessage(state.query.trim()),
         );
 
       case SearchStatus.success:
@@ -246,7 +250,7 @@ class _IdleView extends ConsumerWidget {
         child: Text(
           SearchMovies.isValidQuery(typedQuery)
               ? ''
-              : 'Saisissez au moins ${SearchMovies.minQueryLength} caractères.',
+              : context.l10n.searchMinLength(SearchMovies.minQueryLength),
           style: AppTypography.body,
         ),
       );
@@ -254,10 +258,10 @@ class _IdleView extends ConsumerWidget {
 
     final recent = ref.watch(recentSearchesProvider).value ?? const [];
     if (recent.isEmpty) {
-      return const StateMessageView(
+      return StateMessageView(
         icon: Icons.search_rounded,
-        title: 'Trouvez votre prochain film',
-        message: 'Recherchez parmi des milliers de films par leur titre.',
+        title: context.l10n.searchIdleTitle,
+        message: context.l10n.searchIdleMessage,
       );
     }
 
@@ -266,7 +270,7 @@ class _IdleView extends ConsumerWidget {
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
         const SizedBox(height: AppDimensions.sm),
-        Text('RECHERCHES RÉCENTES', style: AppTypography.overline),
+        Text(context.l10n.searchRecent, style: AppTypography.overline),
         const SizedBox(height: AppDimensions.md),
         Wrap(
           spacing: AppDimensions.sm,
@@ -327,12 +331,12 @@ class _Results extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '$count résultat${count > 1 ? 's' : ''}',
+                    context.l10n.searchResultCount(count),
                     style: AppTypography.bodyStrong.copyWith(fontSize: 17),
                   ),
                 ),
                 Text(
-                  'PAGE ${state.page} SUR ${state.totalPages}',
+                  context.l10n.searchPage(state.page, state.totalPages),
                   style: AppTypography.overline,
                 ),
               ],
@@ -384,11 +388,11 @@ class _Footer extends StatelessWidget {
       child = Column(
         children: [
           Text(
-            failure.message,
+            context.l10n.failureMessage(failure),
             textAlign: TextAlign.center,
             style: AppTypography.body.copyWith(color: AppColors.signal),
           ),
-          TextButton(onPressed: onRetry, child: const Text('Réessayer')),
+          TextButton(onPressed: onRetry, child: Text(context.l10n.retry)),
         ],
       );
     } else {

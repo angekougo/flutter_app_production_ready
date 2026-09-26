@@ -7,8 +7,7 @@ Failure mapExceptionToFailure(Object error) => switch (error) {
   UnauthorizedException() => const UnauthorizedFailure(),
   NotFoundException() => const NotFoundFailure(),
   CacheException() => const CacheFailure(),
-  AuthException(:final message) =>
-    message == null ? const AuthFailure() : AuthFailure(message),
+  AuthException(:final reason) => AuthFailure(reason),
   ServerException() => const ServerFailure(),
   _ => const UnknownFailure(),
 };

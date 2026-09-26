@@ -7,6 +7,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../shared/extensions/async_value_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../domain/entities/sign_up_result.dart';
 import '../../domain/validators/auth_validators.dart';
@@ -68,16 +69,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.velours,
-        title: Text('Vérifiez vos emails', style: AppTypography.section),
+        title: Text(
+          context.l10n.confirmEmailTitle,
+          style: AppTypography.section,
+        ),
         content: Text(
-          'Un lien de confirmation a été envoyé à $email. '
-          'Validez votre adresse puis connectez-vous.',
+          context.l10n.confirmEmailBody(email),
           style: AppTypography.body,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Compris'),
+            child: Text(context.l10n.gotIt),
           ),
         ],
       ),
@@ -97,14 +100,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       } else {
         showAppSnackBar(
           ScaffoldMessenger.of(context),
-          'Compte créé. Bienvenue, ${result.user.firstName} !',
+          context.l10n.registerSuccess(result.user.firstName),
           tone: SnackTone.success,
         );
       }
     });
 
     final state = ref.watch(registerControllerProvider);
-    final serverError = state.failureMessage;
+    final l10n = context.l10n;
+    final serverError = switch (state.failure) {
+      final failure? => l10n.failureMessage(failure),
+      null => null,
+    };
     final strength = PasswordStrength.evaluate(_password.text);
     final confirmationMatches =
         _confirmation.text.isNotEmpty && _confirmation.text == _password.text;
@@ -124,7 +131,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: IconButton(
-                  tooltip: 'Retour',
+                  tooltip: l10n.back,
                   onPressed: () => context.canPop()
                       ? context.pop()
                       : context.go(RoutePaths.login),
@@ -137,53 +144,56 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               ),
               const SizedBox(height: AppDimensions.xl),
               Text(
-                'Créer un compte',
+                l10n.registerTitle,
                 style: AppTypography.display.copyWith(fontSize: 40),
               ),
               const SizedBox(height: AppDimensions.md),
               Text(
-                'Vos favoris vous suivront partout, même sans réseau.',
+                l10n.registerSubtitle,
                 style: AppTypography.body.copyWith(fontSize: 16),
               ),
               const SizedBox(height: AppDimensions.xxl),
               LabeledTextField(
-                label: 'Nom et prénom',
-                optionalHint: '(facultatif)',
+                label: l10n.fieldFullName,
+                optionalHint: l10n.fieldOptional,
                 controller: _fullName,
-                hint: 'Awa Konan',
+                hint: l10n.fieldFullNameHint,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.name],
               ),
               const SizedBox(height: AppDimensions.xl),
               LabeledTextField(
-                label: 'Email',
+                label: l10n.fieldEmail,
                 controller: _email,
-                hint: 'vous@exemple.com',
+                hint: l10n.fieldEmailHint,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
-                validator: AuthValidators.email,
+                validator: (v) =>
+                    l10n.validationMessage(AuthValidators.email(v)),
                 onChanged: _clearServerError,
               ),
               const SizedBox(height: AppDimensions.xl),
               LabeledTextField(
-                label: 'Mot de passe',
+                label: l10n.fieldPassword,
                 controller: _password,
                 isPassword: true,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.newPassword],
-                validator: AuthValidators.newPassword,
+                validator: (v) =>
+                    l10n.validationMessage(AuthValidators.newPassword(v)),
                 onChanged: _clearServerError,
               ),
               PasswordStrengthIndicator(strength: strength),
               const SizedBox(height: AppDimensions.xl),
               LabeledTextField(
-                label: 'Confirmation du mot de passe',
+                label: l10n.fieldPasswordConfirmation,
                 controller: _confirmation,
                 isPassword: true,
                 textInputAction: TextInputAction.done,
-                validator: (v) =>
-                    AuthValidators.confirmation(v, _password.text),
+                validator: (v) => l10n.validationMessage(
+                  AuthValidators.confirmation(v, _password.text),
+                ),
                 onSubmitted: (_) => _submit(),
                 highlight: confirmationMatches
                     ? AppColors.menthe
@@ -197,8 +207,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   padding: const EdgeInsets.only(top: AppDimensions.md),
                   child: Text(
                     confirmationMatches
-                        ? 'Les mots de passe correspondent.'
-                        : 'Les mots de passe ne correspondent pas.',
+                        ? l10n.passwordsMatch
+                        : l10n.validationPasswordsMismatch,
                     style: AppTypography.caption.copyWith(
                       fontSize: 14,
                       color: confirmationMatches
@@ -210,7 +220,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               if (serverError != null) FormErrorMessage(serverError),
               const SizedBox(height: AppDimensions.xxl),
               LoadingFilledButton(
-                label: 'Créer mon compte',
+                label: l10n.registerButton,
                 isLoading: state.isLoading,
                 onPressed: _submit,
               ),
@@ -219,8 +229,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         ),
       ),
       footer: AuthFooterLink(
-        question: 'Déjà inscrit ?',
-        action: 'Se connecter',
+        question: l10n.registerAlreadyMember,
+        action: l10n.loginButton,
         onTap: () =>
             context.canPop() ? context.pop() : context.go(RoutePaths.login),
       ),

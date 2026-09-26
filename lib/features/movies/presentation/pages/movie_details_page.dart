@@ -9,6 +9,7 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/result/result.dart';
 import '../../../../shared/extensions/async_value_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/offline_banner.dart';
 import '../../../../shared/widgets/person_avatar.dart';
@@ -79,7 +80,7 @@ class MovieDetailsPage extends ConsumerWidget {
                 children: [
                   RoundIconButton(
                     icon: Icons.arrow_back_ios_new_rounded,
-                    tooltip: 'Retour',
+                    tooltip: context.l10n.back,
                     onPressed: () => context.canPop()
                         ? context.pop()
                         : context.go(RoutePaths.home),
@@ -91,8 +92,8 @@ class MovieDetailsPage extends ConsumerWidget {
                         : Icons.favorite_border_rounded,
                     color: isFavorite ? AppColors.projecteur : AppColors.papier,
                     tooltip: isFavorite
-                        ? 'Retirer des favoris'
-                        : 'Ajouter aux favoris',
+                        ? context.l10n.favoriteRemove
+                        : context.l10n.favoriteAdd,
                     onPressed: toggleFavorite,
                   ),
                 ],
@@ -113,20 +114,21 @@ Future<void> _toggleFavorite(
   required bool isFavorite,
 }) async {
   final messenger = ScaffoldMessenger.of(context);
+  final l10n = context.l10n;
   final result = await ref
       .read(favoriteActionsProvider)
       .toggle(movie, isFavorite: isFavorite, genres: genres);
   switch (result) {
     case Success(data: true):
+      showAppSnackBar(messenger, l10n.favoriteAdded, tone: SnackTone.success);
+    case Success():
+      showAppSnackBar(messenger, l10n.favoriteRemoved);
+    case Error(:final failure):
       showAppSnackBar(
         messenger,
-        'Ajouté aux favoris · disponible hors connexion.',
-        tone: SnackTone.success,
+        l10n.failureMessage(failure),
+        tone: SnackTone.error,
       );
-    case Success():
-      showAppSnackBar(messenger, 'Retiré des favoris.');
-    case Error(:final failure):
-      showAppSnackBar(messenger, failure.message, tone: SnackTone.error);
   }
 }
 
@@ -153,6 +155,7 @@ class _DetailsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final movie = details.movie;
+    final l10n = context.l10n;
     const gap = SizedBox(height: AppDimensions.xl);
 
     return CustomScrollView(
@@ -189,12 +192,12 @@ class _DetailsContent extends StatelessWidget {
                       Icons.favorite_rounded,
                       color: AppColors.projecteur,
                     ),
-                    label: const Text('Retirer des favoris'),
+                    label: Text(l10n.favoriteRemove),
                   )
                 : FilledButton.icon(
                     onPressed: onToggleFavorite,
                     icon: const Icon(Icons.favorite_border_rounded),
-                    label: const Text('Ajouter aux favoris'),
+                    label: Text(l10n.favoriteAdd),
                   ),
           ),
         ),
@@ -206,12 +209,12 @@ class _DetailsContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Synopsis',
+                  l10n.synopsis,
                   style: AppTypography.section.copyWith(fontSize: 26),
                 ),
                 const SizedBox(height: AppDimensions.md),
                 Text(
-                  movie.overview ?? 'Synopsis non disponible pour ce film.',
+                  movie.overview ?? l10n.synopsisUnavailable,
                   style: AppTypography.body.copyWith(
                     fontSize: 16,
                     color: AppColors.papier.withValues(alpha: 0.85),
@@ -225,9 +228,9 @@ class _DetailsContent extends StatelessWidget {
           const SliverToBoxAdapter(child: SizedBox(height: AppDimensions.xxl)),
           SliverToBoxAdapter(
             child: SectionHeader(
-              title: 'Distribution',
+              title: l10n.cast,
               actionLabel: details.cast.length > _visibleCast
-                  ? 'Tout voir'
+                  ? l10n.seeAll
                   : null,
               onAction: () => _showFullCast(context, details.cast),
             ),
@@ -255,9 +258,7 @@ class _DetailsContent extends StatelessWidget {
         ],
         if (details.similar.isNotEmpty) ...[
           const SliverToBoxAdapter(child: SizedBox(height: AppDimensions.xxl)),
-          const SliverToBoxAdapter(
-            child: SectionHeader(title: 'Films similaires'),
-          ),
+          SliverToBoxAdapter(child: SectionHeader(title: l10n.similarMovies)),
           const SliverToBoxAdapter(child: SizedBox(height: AppDimensions.lg)),
           SliverToBoxAdapter(
             child: MovieCarousel(
@@ -298,7 +299,7 @@ Future<void> _showFullCast(BuildContext context, List<CastMember> cast) {
               AppDimensions.gutter,
               AppDimensions.md,
             ),
-            child: Text('Distribution', style: AppTypography.section),
+            child: Text(context.l10n.cast, style: AppTypography.section),
           ),
           for (final member in cast)
             ListTile(
@@ -382,22 +383,22 @@ class _DetailsError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final (IconData icon, String title, String message) = switch (failure) {
       NotFoundFailure() => (
         Icons.movie_filter_outlined,
-        'Film introuvable.',
-        'Ce film n’existe pas ou a été retiré de TMDB.',
+        l10n.failureMovieNotFound,
+        l10n.movieNotFoundMessage,
       ),
       CacheFailure() => (
         Icons.wifi_off_rounded,
-        'Fiche indisponible hors connexion',
-        'Cette fiche n’a pas encore été consultée : '
-            'elle n’est pas disponible hors ligne.',
+        l10n.detailsOfflineTitle,
+        l10n.detailsOfflineMessage,
       ),
       _ => (
         Icons.movie_filter_outlined,
-        'Impossible de charger les données.',
-        failure.message,
+        l10n.loadErrorTitle,
+        l10n.failureMessage(failure),
       ),
     };
 
@@ -409,7 +410,7 @@ class _DetailsError extends StatelessWidget {
           icon: icon,
           title: preview?.title ?? title,
           message: preview == null ? message : '$title $message',
-          primaryLabel: failure is NotFoundFailure ? null : 'Réessayer',
+          primaryLabel: failure is NotFoundFailure ? null : l10n.retry,
           onPrimary: onRetry,
         ),
       ),

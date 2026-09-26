@@ -180,23 +180,14 @@ void main() {
       expect(result.dataOrNull!.movies.single.id, 9);
     });
 
-    test(
-      'sans réseau ni cache : CacheFailure avec le message attendu',
-      () async {
-        offline();
-        cacheReturns(null);
+    test('sans réseau ni cache : CacheFailure', () async {
+      offline();
+      cacheReturns(null);
 
-        final result = await repository.getPopularMovies();
+      final result = await repository.getPopularMovies();
 
-        final failure = (result as Error).failure;
-        expect(failure, isA<CacheFailure>());
-        expect(
-          failure.message,
-          'Impossible de charger les données. '
-          'Aucune donnée hors ligne n’est disponible.',
-        );
-      },
-    );
+      expect((result as Error).failure, const CacheFailure());
+    });
   });
 
   group('erreurs HTTP', () {

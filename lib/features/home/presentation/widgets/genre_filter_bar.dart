@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../movies/domain/entities/genre.dart';
 
 /// Pastilles « Tous · Drame · Thriller · Comédie… » défilantes.
@@ -21,7 +22,7 @@ class GenreFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <(int?, String)>[
-      (null, 'Tous'),
+      (null, context.l10n.genreAll),
       for (final g in genres) (g.id, g.name),
     ];
 

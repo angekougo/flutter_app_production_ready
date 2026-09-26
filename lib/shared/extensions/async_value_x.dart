@@ -11,7 +11,4 @@ extension AsyncValueFailureX on AsyncValue<Object?> {
     final Failure f => f,
     _ => const UnknownFailure(),
   };
-
-  /// Message utilisateur de l'erreur courante.
-  String? get failureMessage => failure?.message;
 }

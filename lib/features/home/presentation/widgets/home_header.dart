@@ -4,6 +4,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 
 /// « BONSOIR, AWA » + « Cinéthèque » + bouton recherche.
 class HomeHeader extends StatelessWidget {
@@ -37,7 +38,7 @@ class HomeHeader extends StatelessWidget {
           ),
           if (onSearch != null)
             IconButton(
-              tooltip: 'Rechercher un film',
+              tooltip: context.l10n.searchMovieTooltip,
               onPressed: onSearch,
               icon: const Icon(Icons.search_rounded, size: 26),
               style: IconButton.styleFrom(

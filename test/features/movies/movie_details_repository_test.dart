@@ -141,8 +141,9 @@ void main() {
 
     final result = await repository.getMovieDetails(1);
 
-    final failure = (result as Error).failure;
-    expect(failure, isA<NotFoundFailure>());
-    expect(failure.message, 'Film introuvable.');
+    expect(
+      (result as Error).failure,
+      const NotFoundFailure(NotFoundResource.movie),
+    );
   });
 }

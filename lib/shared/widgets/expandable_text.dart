@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
 import '../../app/theme/app_typography.dart';
+import '../extensions/l10n_x.dart';
 
 /// Texte long replié sur [maxLines] lignes, avec « Lire la suite ».
 /// Le bouton n'apparaît que si le texte dépasse réellement.
@@ -60,7 +61,7 @@ class _ExpandableTextState extends State<ExpandableText> {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
-                    _expanded ? 'Réduire' : 'Lire la suite',
+                    _expanded ? context.l10n.readLess : context.l10n.readMore,
                     style: AppTypography.button.copyWith(
                       color: AppColors.projecteur,
                     ),

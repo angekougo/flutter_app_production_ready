@@ -18,9 +18,7 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
   final FavoritesLocalDataSource _local;
   final CurrentUserIdReader _currentUserId;
 
-  static const _noSession = UnauthorizedFailure(
-    'Connectez-vous pour gérer vos favoris.',
-  );
+  static const _noSession = UnauthorizedFailure(UnauthorizedReason.notSignedIn);
 
   @override
   Stream<List<Favorite>> watchFavorites() {

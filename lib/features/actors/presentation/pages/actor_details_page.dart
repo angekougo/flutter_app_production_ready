@@ -7,8 +7,9 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/extensions/async_value_x.dart';
-import '../../../../shared/extensions/format_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/expandable_text.dart';
 import '../../../../shared/widgets/offline_banner.dart';
 import '../../../../shared/widgets/person_avatar.dart';
@@ -67,10 +68,10 @@ class ActorDetailsPage extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                   shape: const StadiumBorder(),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_back_ios_new_rounded,
                   size: 18,
-                  semanticLabel: 'Retour',
+                  semanticLabel: context.l10n.back,
                 ),
               ),
             ),
@@ -82,38 +83,19 @@ class ActorDetailsPage extends ConsumerWidget {
   }
 }
 
-/// « NÉE LE 14.03.1988 · LYON »
-String actorBirthLine(ActorDetails actor) {
-  final (born, died) = switch (actor.gender) {
-    ActorGender.female => ('NÉE', 'DÉCÉDÉE'),
-    ActorGender.male => ('NÉ', 'DÉCÉDÉ'),
-    ActorGender.unknown => ('NÉ·E', 'DÉCÉDÉ·E'),
-  };
+/// « NÉE LE 14.03.1988 · LYON » / « BORN MAR 14, 1988 · LYON »
+String actorBirthLine(ActorDetails actor, AppLocalizations l10n) {
+  final gender = l10n.genderKey(actor.gender);
   // « Kingston upon Thames, London, England, UK » → « KINGSTON UPON THAMES ».
   final place = actor.placeOfBirth?.split(',').first.trim();
   return [
-    if (actor.birthday != null) '$born LE ${actor.birthday!.asLongDate}',
+    if (actor.birthday case final birthday?)
+      l10n.actorBorn(gender, l10n.longDate(birthday).toUpperCase()),
     if (place != null && place.isNotEmpty) place.toUpperCase(),
-    if (actor.deathday != null) '$died LE ${actor.deathday!.asLongDate}',
+    if (actor.deathday case final deathday?)
+      l10n.actorDied(gender, l10n.longDate(deathday).toUpperCase()),
   ].join(' · ');
 }
-
-/// Département TMDB traduit (« Acting » → « Interprétation »).
-String departmentLabel(String? department) => switch (department) {
-  'Acting' => 'Interprétation',
-  'Directing' => 'Réalisation',
-  'Writing' => 'Scénario',
-  'Production' => 'Production',
-  'Sound' => 'Musique & son',
-  'Camera' => 'Image',
-  'Editing' => 'Montage',
-  'Art' => 'Direction artistique',
-  'Costume & Make-Up' => 'Costumes & maquillage',
-  'Visual Effects' => 'Effets visuels',
-  'Lighting' => 'Éclairage',
-  'Crew' => 'Équipe technique',
-  _ => 'Cinéma',
-};
 
 class _ActorContent extends StatelessWidget {
   const _ActorContent({
@@ -128,10 +110,9 @@ class _ActorContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final birthLine = actorBirthLine(actor);
-    final knownFor = actor.gender == ActorGender.female
-        ? 'CONNUE POUR'
-        : 'CONNU POUR';
+    final l10n = context.l10n;
+    final birthLine = actorBirthLine(actor, l10n);
+    final knownFor = l10n.actorKnownFor(l10n.genderKey(actor.gender));
     final count = actor.credits.length;
 
     return CustomScrollView(
@@ -185,7 +166,7 @@ class _ActorContent extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _StatCard(
-                          label: 'FILMS',
+                          label: l10n.actorFilms,
                           child: Text(
                             '$count',
                             style: AppTypography.display.copyWith(fontSize: 30),
@@ -197,7 +178,7 @@ class _ActorContent extends StatelessWidget {
                         child: _StatCard(
                           label: knownFor,
                           child: Text(
-                            departmentLabel(actor.knownForDepartment),
+                            l10n.departmentLabel(actor.knownForDepartment),
                             style: AppTypography.bodyStrong.copyWith(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -216,12 +197,12 @@ class _ActorContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Biographie',
+                      l10n.biography,
                       style: AppTypography.section.copyWith(fontSize: 26),
                     ),
                     const SizedBox(height: AppDimensions.md),
                     ExpandableText(
-                      actor.biography ?? 'Aucune biographie disponible.',
+                      actor.biography ?? l10n.biographyUnavailable,
                       style: AppTypography.body.copyWith(
                         fontSize: 16,
                         color: AppColors.papier.withValues(alpha: 0.85),
@@ -232,8 +213,8 @@ class _ActorContent extends StatelessWidget {
               ),
               const SizedBox(height: AppDimensions.xxl),
               SectionHeader(
-                title: 'Filmographie',
-                tag: '$count FILM${count > 1 ? 'S' : ''}',
+                title: l10n.filmography,
+                tag: l10n.filmCount(count),
               ),
               const SizedBox(height: AppDimensions.lg),
             ],
@@ -347,28 +328,27 @@ class _ActorError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return switch (failure) {
-      NotFoundFailure(:final message) => StateMessageView(
+      NotFoundFailure() => StateMessageView(
         tone: StateTone.error,
         icon: Icons.person_off_outlined,
-        title: message,
-        message: 'Cette fiche n’existe pas ou a été retirée de TMDB.',
+        title: l10n.failureMessage(failure),
+        message: l10n.actorNotFoundMessage,
       ),
       CacheFailure() => StateMessageView(
         icon: Icons.wifi_off_rounded,
-        title: 'Fiche indisponible hors connexion',
-        message:
-            'Cette fiche n’a pas encore été consultée : '
-            'elle n’est pas disponible hors ligne.',
-        primaryLabel: 'Réessayer',
+        title: l10n.detailsOfflineTitle,
+        message: l10n.detailsOfflineMessage,
+        primaryLabel: l10n.retry,
         onPrimary: onRetry,
       ),
       _ => StateMessageView(
         tone: StateTone.error,
         icon: Icons.person_outline_rounded,
-        title: 'Impossible de charger les données.',
-        message: failure.message,
-        primaryLabel: 'Réessayer',
+        title: l10n.loadErrorTitle,
+        message: l10n.failureMessage(failure),
+        primaryLabel: l10n.retry,
         onPrimary: onRetry,
       ),
     };

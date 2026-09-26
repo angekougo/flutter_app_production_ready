@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 
 /// Champ de formulaire avec libellé au-dessus (« Email », « Mot de passe »).
 ///
@@ -62,7 +63,9 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
     Widget? suffix = widget.suffix;
     if (widget.isPassword && suffix == null) {
       suffix = IconButton(
-        tooltip: _obscured ? 'Afficher' : 'Masquer',
+        tooltip: _obscured
+            ? context.l10n.showPassword
+            : context.l10n.hidePassword,
         onPressed: () => setState(() => _obscured = !_obscured),
         icon: Icon(
           _obscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,

@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/test_app.dart';
 
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
@@ -18,7 +19,7 @@ void main() {
       ProviderScope(
         retry: (_, _) => null,
         overrides: [movieRepositoryProvider.overrideWithValue(repo)],
-        child: const MaterialApp(home: SearchPage()),
+        child: testApp(const SearchPage()),
       ),
     );
     await tester.pumpAndSettle();

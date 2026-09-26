@@ -5,7 +5,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
 import '../../app/theme/app_typography.dart';
 import '../../core/network/api_constants.dart';
-import '../extensions/format_x.dart';
+import '../extensions/l10n_x.dart';
 
 /// Affiche d'un film (ratio 2:3).
 ///
@@ -147,7 +147,7 @@ class RatingBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.radiusSm - 2),
       ),
       child: Text(
-        '★ ${rating.asRating}',
+        '★ ${context.l10n.rating(rating)}',
         style: AppTypography.meta.copyWith(
           color: AppColors.projecteur,
           letterSpacing: 0.5,

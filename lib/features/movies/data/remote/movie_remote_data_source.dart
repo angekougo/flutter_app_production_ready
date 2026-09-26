@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/api_constants.dart';
 import '../../../../core/network/dio_error_mapper.dart';
 import '../../domain/entities/movie_category.dart';
@@ -23,9 +22,12 @@ abstract interface class MovieRemoteDataSource {
 /// ajoutées par `TmdbInterceptor` ; les erreurs Dio deviennent des
 /// `AppException` typées.
 class TmdbMovieRemoteDataSource implements MovieRemoteDataSource {
-  TmdbMovieRemoteDataSource(this._dio);
+  TmdbMovieRemoteDataSource(this._dio, {required this.region});
 
   final Dio _dio;
+
+  /// Région TMDB (ex. « FR ») des listes Populaires et Nouveautés.
+  final String region;
 
   @override
   Future<MoviePageModel> getMovies(
@@ -33,17 +35,14 @@ class TmdbMovieRemoteDataSource implements MovieRemoteDataSource {
     required int page,
   }) async {
     final (path, params) = switch (category) {
-      MovieCategory.popular => (
-        ApiConstants.popularMovies,
-        {'region': AppConstants.tmdbRegion},
-      ),
+      MovieCategory.popular => (ApiConstants.popularMovies, {'region': region}),
       MovieCategory.trending => (
         ApiConstants.trendingMovies,
         <String, String>{},
       ),
       MovieCategory.nowPlaying => (
         ApiConstants.nowPlayingMovies,
-        {'region': AppConstants.tmdbRegion},
+        {'region': region},
       ),
     };
     final json = await _get(path, {...params, 'page': page});

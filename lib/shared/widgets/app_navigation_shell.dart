@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../extensions/l10n_x.dart';
+
 /// Squelette des onglets principaux : Accueil · Recherche · Favoris · Profil.
 class AppNavigationShell extends StatelessWidget {
   const AppNavigationShell({super.key, required this.navigationShell});
@@ -9,6 +11,7 @@ class AppNavigationShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: DecoratedBox(
@@ -24,25 +27,25 @@ class AppNavigationShell extends StatelessWidget {
             // Re-toucher l'onglet actif revient à sa racine.
             initialLocation: index == navigationShell.currentIndex,
           ),
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded),
-              label: 'Accueil',
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home_rounded),
+              label: l10n.navHome,
             ),
             NavigationDestination(
-              icon: Icon(Icons.search_rounded),
-              label: 'Recherche',
+              icon: const Icon(Icons.search_rounded),
+              label: l10n.navSearch,
             ),
             NavigationDestination(
-              icon: Icon(Icons.favorite_border_rounded),
-              selectedIcon: Icon(Icons.favorite_rounded),
-              label: 'Favoris',
+              icon: const Icon(Icons.favorite_border_rounded),
+              selectedIcon: const Icon(Icons.favorite_rounded),
+              label: l10n.navFavorites,
             ),
             NavigationDestination(
-              icon: Icon(Icons.person_outline_rounded),
-              selectedIcon: Icon(Icons.person_rounded),
-              label: 'Profil',
+              icon: const Icon(Icons.person_outline_rounded),
+              selectedIcon: const Icon(Icons.person_rounded),
+              label: l10n.navProfile,
             ),
           ],
         ),

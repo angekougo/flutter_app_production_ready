@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/test_app.dart';
 
 /// Simule un bug imprévu (erreur qui n'est pas un Failure).
 class _BuggyMovieRepository extends FakeMovieRepository {
@@ -69,7 +70,7 @@ void main() {
           if (movies != null) movieRepositoryProvider.overrideWithValue(movies),
           if (actors != null) actorRepositoryProvider.overrideWithValue(actors),
         ],
-        child: MaterialApp(home: page),
+        child: testApp(page),
       ),
     );
     await tester.pumpAndSettle();
@@ -176,7 +177,7 @@ void main() {
         tester,
         const ActorDetailsPage(actorId: 99),
         actors: _FakeActorRepository(
-          const Error(NotFoundFailure('Acteur introuvable.')),
+          const Error(NotFoundFailure(NotFoundResource.actor)),
         ),
       );
 

@@ -8,6 +8,7 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../shared/extensions/async_value_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/offline_banner.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/skeleton.dart';
@@ -37,7 +38,7 @@ class HomePage extends ConsumerWidget {
 
     final user = ref.watch(currentUserProvider);
     final greeting = [
-      greetingFor(DateTime.now()),
+      context.l10n.greeting(DateTime.now()),
       if (user != null) user.firstName,
     ].join(', ');
     final overview = ref.watch(homeOverviewProvider);
@@ -177,8 +178,8 @@ class _HomeSection extends ConsumerWidget {
         if (movies.isEmpty) {
           return CarouselMessage(
             hasGenreFilter
-                ? 'Aucun film de ce genre dans cette sélection.'
-                : 'Aucun film pour le moment.',
+                ? context.l10n.homeNoMovieForGenre
+                : context.l10n.homeNoMovies,
           );
         }
         return MovieCarousel(
@@ -187,7 +188,7 @@ class _HomeSection extends ConsumerWidget {
         );
       }(),
       AsyncValue(:final failure?) => CarouselMessage(
-        failure.message,
+        context.l10n.failureMessage(failure),
         isError: true,
       ),
       _ => const MovieCarouselSkeleton(),
@@ -200,9 +201,9 @@ class _HomeSection extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SectionHeader(
-              title: category.label,
-              tag: fromCache ? 'EN CACHE' : null,
-              actionLabel: 'Tout voir',
+              title: context.l10n.categoryLabel(category),
+              tag: fromCache ? context.l10n.cachedTag : null,
+              actionLabel: context.l10n.seeAll,
               onAction: () => context.push(RoutePaths.movieList(category.key)),
             ),
             const SizedBox(height: AppDimensions.md),
@@ -263,10 +264,10 @@ class _HomeError extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final message = failure is CacheFailure
-        ? 'Aucune donnée hors ligne n’est disponible. '
-              'Vérifiez votre connexion puis réessayez.'
-        : failure.message;
+        ? l10n.homeOfflineNoData
+        : l10n.failureMessage(failure);
 
     return Scaffold(
       body: SafeArea(
@@ -278,11 +279,11 @@ class _HomeError extends ConsumerWidget {
               child: StateMessageView(
                 tone: StateTone.error,
                 icon: Icons.movie_filter_outlined,
-                title: 'Impossible de charger les données.',
+                title: l10n.loadErrorTitle,
                 message: message,
-                primaryLabel: 'Réessayer',
+                primaryLabel: l10n.retry,
                 onPrimary: () => refreshHome(ref),
-                secondaryLabel: 'Voir mes favoris',
+                secondaryLabel: l10n.seeMyFavorites,
                 onSecondary: () => context.go(RoutePaths.favorites),
               ),
             ),

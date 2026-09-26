@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
-import '../../../../shared/extensions/format_x.dart';
+import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/poster_card.dart';
 import '../../../../shared/widgets/skeleton.dart';
 import '../../domain/entities/movie.dart';
@@ -69,7 +69,7 @@ class SearchResultTile extends StatelessWidget {
                   if (movie.hasRating) ...[
                     const SizedBox(height: AppDimensions.xs),
                     Text(
-                      '★ ${movie.voteAverage.asRating}',
+                      '★ ${context.l10n.rating(movie.voteAverage)}',
                       style: AppTypography.meta.copyWith(
                         color: AppColors.projecteur,
                         fontSize: 13,

@@ -39,14 +39,20 @@ void main() {
   });
 
   group('mapExceptionToFailure', () {
-    test('chaque exception donne le message utilisateur attendu', () {
+    test('chaque exception donne la Failure métier attendue', () {
       expect(
-        mapExceptionToFailure(const NetworkException()).message,
-        'Vous êtes hors connexion.',
+        mapExceptionToFailure(const NetworkException()),
+        const NetworkFailure(),
       );
       expect(
-        mapExceptionToFailure(const UnauthorizedException()).message,
-        'Votre session a expiré.',
+        mapExceptionToFailure(const UnauthorizedException()),
+        const UnauthorizedFailure(),
+      );
+      expect(
+        mapExceptionToFailure(
+          const AuthException(AuthErrorReason.emailNotConfirmed),
+        ),
+        const AuthFailure(AuthErrorReason.emailNotConfirmed),
       );
       expect(
         mapExceptionToFailure(const NotFoundException()),

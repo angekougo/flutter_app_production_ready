@@ -15,7 +15,10 @@ import '../../domain/usecases/movie_usecases.dart';
 // ─── Injection de dépendances ────────────────────────────────────────────────
 
 final movieRemoteDataSourceProvider = Provider<MovieRemoteDataSource>(
-  (ref) => TmdbMovieRemoteDataSource(ref.watch(tmdbDioProvider)),
+  (ref) => TmdbMovieRemoteDataSource(
+    ref.watch(tmdbDioProvider),
+    region: ref.watch(tmdbLocaleProvider).region,
+  ),
 );
 
 final movieLocalDataSourceProvider = Provider<MovieLocalDataSource>(

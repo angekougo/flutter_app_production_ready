@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../helpers/fake_movie_repository.dart';
+import '../../helpers/test_app.dart';
 
 class _StaticNetworkInfo implements NetworkInfo {
   @override
@@ -60,7 +61,7 @@ void main() {
             const AppUser(id: 'u', email: 'awa@x.com', fullName: 'Awa Konan'),
           ),
         ],
-        child: const MaterialApp(home: HomePage()),
+        child: testApp(const HomePage()),
       ),
     );
     await tester.pumpAndSettle();

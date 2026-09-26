@@ -14,6 +14,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../helpers/test_app.dart';
+
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
 /// Réseau qui ne répond jamais (cas qui bloquait le Splash).
@@ -46,7 +48,7 @@ void main() {
           networkInfoProvider.overrideWithValue(_HangingNetworkInfo()),
           getCurrentUserProvider.overrideWithValue(GetCurrentUser(repository)),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: testRouterApp(router),
       ),
     );
     await tester.pump(const Duration(seconds: 3));
