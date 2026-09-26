@@ -57,7 +57,7 @@ vignettes colorées. Voir [Captures d'écran](#11-commandes).</sub>
 | Images optimisées et lazy-loadées | Taille TMDB et décodage adaptés à l'affichage, cache disque, listes `builder` | [§ 5](#5-performance) |
 | Pas de rebuilds inutiles | **flutter_hooks** + `select` + égalité par valeur ; reconstructions **mesurées** par des tests | [`test/performance/`](test/performance) |
 | Semantic labels | Libellés sur tous les éléments interactifs, en-têtes, zones live ; règles Flutter vérifiées sur 6 écrans | [§ 6](#6-accessibilité) |
-| FR + EN | `flutter gen-l10n`, ~180 textes, choix de langue persistant | [`lib/l10n/`](lib/l10n) |
+| FR + EN | `flutter gen-l10n`, 173 textes, choix de langue persistant | [`lib/l10n/`](lib/l10n) |
 | CI lint + tests | GitHub Actions : format, analyse, tests, intégration Linux, APK | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
 | `flutter analyze` propre | `--fatal-infos --fatal-warnings` en CI, 30+ règles de lint | [`analysis_options.yaml`](analysis_options.yaml) |
 | README, CHANGELOG | Ce document, [CHANGELOG.md](CHANGELOG.md) (3 versions) | — |
