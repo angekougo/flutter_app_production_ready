@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/failures.dart';
@@ -49,8 +50,9 @@ final homeSectionProvider =
           );
     });
 
-/// Vue d'ensemble de l'accueil, dérivée des trois sections.
-class HomeOverview {
+/// Vue d'ensemble de l'accueil, dérivée des trois sections. Égalité par
+/// valeur : l'écran n'est reconstruit que si elle change réellement.
+class HomeOverview extends Equatable {
   const HomeOverview({
     required this.isInitialLoading,
     required this.showsCachedData,
@@ -69,6 +71,14 @@ class HomeOverview {
 
   /// Toutes les sections ont échoué sans aucune donnée à afficher.
   final Failure? blockingFailure;
+
+  @override
+  List<Object?> get props => [
+    isInitialLoading,
+    showsCachedData,
+    cachedAt,
+    blockingFailure,
+  ];
 }
 
 final homeOverviewProvider = Provider<HomeOverview>((ref) {

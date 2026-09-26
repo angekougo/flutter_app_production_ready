@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
 
 /// Bloc gris pulsé affiché pendant le chargement.
-class SkeletonBox extends StatefulWidget {
+///
+/// La pulsation anime l'opacité d'un calque ([FadeTransition]) : aucun
+/// widget n'est reconstruit pendant l'animation, et [RepaintBoundary] limite
+/// le repeint au bloc lui-même.
+class SkeletonBox extends HookWidget {
   const SkeletonBox({
     super.key,
     this.width,
@@ -17,36 +22,34 @@ class SkeletonBox extends StatefulWidget {
   final double radius;
 
   @override
-  State<SkeletonBox> createState() => _SkeletonBoxState();
-}
-
-class _SkeletonBoxState extends State<SkeletonBox>
-    with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) => Container(
-        width: widget.width,
-        height: widget.height,
-        decoration: BoxDecoration(
-          color: Color.lerp(
-            AppColors.salle,
-            AppColors.velours,
-            _controller.value,
+    final controller = useAnimationController(
+      duration: const Duration(milliseconds: 900),
+    );
+    useEffect(() {
+      controller.repeat(reverse: true);
+      return null;
+    }, [controller]);
+
+    final shape = BorderRadius.circular(radius);
+    return RepaintBoundary(
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.salle,
+            borderRadius: shape,
           ),
-          borderRadius: BorderRadius.circular(widget.radius),
+          child: FadeTransition(
+            opacity: controller,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.velours,
+                borderRadius: shape,
+              ),
+            ),
+          ),
         ),
       ),
     );

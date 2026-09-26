@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -16,38 +17,26 @@ import '../widgets/auth_scaffold.dart';
 import '../widgets/form_feedback.dart';
 import '../widgets/labeled_text_field.dart';
 
-class LoginPage extends ConsumerStatefulWidget {
+class LoginPage extends HookConsumerWidget {
   const LoginPage({super.key});
 
   @override
-  ConsumerState<LoginPage> createState() => _LoginPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formKey = useMemoized(GlobalKey<FormState>.new);
+    final email = useTextEditingController();
+    final password = useTextEditingController();
 
-class _LoginPageState extends ConsumerState<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
-  final _password = TextEditingController();
+    void submit() {
+      FocusScope.of(context).unfocus();
+      if (!formKey.currentState!.validate()) return;
+      ref
+          .read(loginControllerProvider.notifier)
+          .submit(email: email.text, password: password.text);
+    }
 
-  @override
-  void dispose() {
-    _email.dispose();
-    _password.dispose();
-    super.dispose();
-  }
+    void clearServerError(String _) =>
+        ref.read(loginControllerProvider.notifier).clearError();
 
-  void _submit() {
-    FocusScope.of(context).unfocus();
-    if (!_formKey.currentState!.validate()) return;
-    ref
-        .read(loginControllerProvider.notifier)
-        .submit(email: _email.text, password: _password.text);
-  }
-
-  void _clearServerError(String _) =>
-      ref.read(loginControllerProvider.notifier).clearError();
-
-  @override
-  Widget build(BuildContext context) {
     // Le routeur redirige seul vers l'accueil ; on confirme la connexion.
     ref.listen(loginControllerProvider, (previous, next) {
       final user = next.value;
@@ -69,7 +58,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     return AuthScaffold(
       body: Form(
-        key: _formKey,
+        key: formKey,
         child: AutofillGroup(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -95,26 +84,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(height: 40),
               LabeledTextField(
                 label: l10n.fieldEmail,
-                controller: _email,
+                controller: email,
                 hint: l10n.fieldEmailHint,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
                 validator: (v) =>
                     l10n.validationMessage(AuthValidators.email(v)),
-                onChanged: _clearServerError,
+                onChanged: clearServerError,
               ),
               const SizedBox(height: AppDimensions.xl),
               LabeledTextField(
                 label: l10n.fieldPassword,
-                controller: _password,
+                controller: password,
                 isPassword: true,
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.password],
                 validator: (v) =>
                     l10n.validationMessage(AuthValidators.requiredPassword(v)),
-                onChanged: _clearServerError,
-                onSubmitted: (_) => _submit(),
+                onChanged: clearServerError,
+                onSubmitted: (_) => submit(),
                 highlight: serverError != null ? AppColors.signal : null,
               ),
               if (serverError != null) FormErrorMessage(serverError),
@@ -122,7 +111,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               LoadingFilledButton(
                 label: l10n.loginButton,
                 isLoading: state.isLoading,
-                onPressed: _submit,
+                onPressed: submit,
               ),
             ],
           ),

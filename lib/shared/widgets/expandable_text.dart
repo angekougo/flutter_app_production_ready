@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
@@ -7,7 +8,7 @@ import '../extensions/l10n_x.dart';
 
 /// Texte long replié sur [maxLines] lignes, avec « Lire la suite ».
 /// Le bouton n'apparaît que si le texte dépasse réellement.
-class ExpandableText extends StatefulWidget {
+class ExpandableText extends HookWidget {
   const ExpandableText(this.text, {super.key, this.maxLines = 5, this.style});
 
   final String text;
@@ -15,22 +16,16 @@ class ExpandableText extends StatefulWidget {
   final TextStyle? style;
 
   @override
-  State<ExpandableText> createState() => _ExpandableTextState();
-}
-
-class _ExpandableTextState extends State<ExpandableText> {
-  bool _expanded = false;
-
-  @override
   Widget build(BuildContext context) {
+    final expanded = useState(false);
     final style = DefaultTextStyle.of(context).style
-        .merge(widget.style ?? AppTypography.body);
+        .merge(this.style ?? AppTypography.body);
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final painter = TextPainter(
-          text: TextSpan(text: widget.text, style: style),
-          maxLines: widget.maxLines,
+          text: TextSpan(text: text, style: style),
+          maxLines: maxLines,
           textDirection: Directionality.of(context),
           textScaler: MediaQuery.textScalerOf(context),
         )..layout(maxWidth: constraints.maxWidth);
@@ -44,23 +39,25 @@ class _ExpandableTextState extends State<ExpandableText> {
               duration: const Duration(milliseconds: 200),
               alignment: Alignment.topCenter,
               child: Text(
-                widget.text,
+                text,
                 style: style,
-                maxLines: _expanded ? null : widget.maxLines,
-                overflow: _expanded ? null : TextOverflow.ellipsis,
+                maxLines: expanded.value ? null : maxLines,
+                overflow: expanded.value ? null : TextOverflow.ellipsis,
               ),
             ),
             if (overflows)
               Padding(
                 padding: const EdgeInsets.only(top: AppDimensions.sm),
                 child: TextButton(
-                  onPressed: () => setState(() => _expanded = !_expanded),
+                  onPressed: () => expanded.value = !expanded.value,
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: const Size.square(AppDimensions.minTapTarget),
                   ),
                   child: Text(
-                    _expanded ? context.l10n.readLess : context.l10n.readMore,
+                    expanded.value
+                        ? context.l10n.readLess
+                        : context.l10n.readMore,
                     style: AppTypography.button.copyWith(
                       color: AppColors.projecteur,
                     ),

@@ -41,7 +41,6 @@ class ProfilePage extends ConsumerWidget {
     final profile = ref.watch(profileProvider);
     final session = ref.watch(sessionInfoProvider);
     final stats = ref.watch(offlineStatsProvider).value;
-    final now = ref.watch(clockProvider).value ?? DateTime.now();
     final isLoggingOut = ref.watch(logoutControllerProvider).isLoading;
     final chosenLocale = ref.watch(localeControllerProvider);
 
@@ -113,8 +112,10 @@ class ProfilePage extends ConsumerWidget {
                 rows: [
                   _InfoRow(
                     l10n.profileState,
-                    _SessionState(
-                      active: !sessionExpired && session.isActive(now),
+                    _Clocked(
+                      (now) => _SessionState(
+                        active: !sessionExpired && session.isActive(now),
+                      ),
                     ),
                   ),
                   _InfoRow(
@@ -123,9 +124,11 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   _InfoRow(
                     l10n.profileAccessToken,
-                    Text(
-                      _tokenExpiry(l10n, session, now),
-                      style: _monoValueStyle,
+                    _Clocked(
+                      (now) => Text(
+                        _tokenExpiry(l10n, session, now),
+                        style: _monoValueStyle,
+                      ),
                     ),
                   ),
                 ],
@@ -150,12 +153,14 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   _InfoRow(
                     l10n.profileLastUpdate,
-                    Text(
-                      switch (stats?.lastUpdate) {
-                        final date? => l10n.timeAgo(date, now: now),
-                        null => l10n.profileNever,
-                      }.toUpperCase(),
-                      style: _monoValueStyle,
+                    _Clocked(
+                      (now) => Text(
+                        switch (stats?.lastUpdate) {
+                          final date? => l10n.timeAgo(date, now: now),
+                          null => l10n.profileNever,
+                        }.toUpperCase(),
+                        style: _monoValueStyle,
+                      ),
                     ),
                   ),
                 ],
@@ -211,6 +216,19 @@ String _providerLabel(String? provider) => switch (provider) {
   null || 'email' => 'Email · Supabase',
   final other => '${other[0].toUpperCase()}${other.substring(1)} · Supabase',
 };
+
+/// Valeur qui dépend de l'heure (compte à rebours du jeton, « il y a
+/// 2 min ») : seul ce widget se reconstruit à chaque tic de l'horloge
+/// (30 s), pas l'écran entier.
+class _Clocked extends ConsumerWidget {
+  const _Clocked(this.builder);
+
+  final Widget Function(DateTime now) builder;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) =>
+      builder(ref.watch(clockProvider).value ?? DateTime.now());
+}
 
 /// « EXPIRE DANS 52 MIN », « EXPIRE DANS 1 H 05 », « EXPIRÉ ».
 String _tokenExpiry(AppLocalizations l10n, SessionInfo session, DateTime now) {

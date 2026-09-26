@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
@@ -9,7 +10,7 @@ import '../../../../shared/extensions/l10n_x.dart';
 ///
 /// [highlight] force une bordure colorée : rouge (erreur serveur) ou verte
 /// (confirmation valide).
-class LabeledTextField extends StatefulWidget {
+class LabeledTextField extends HookWidget {
   const LabeledTextField({
     super.key,
     required this.label,
@@ -44,15 +45,9 @@ class LabeledTextField extends StatefulWidget {
   final bool enabled;
 
   @override
-  State<LabeledTextField> createState() => _LabeledTextFieldState();
-}
-
-class _LabeledTextFieldState extends State<LabeledTextField> {
-  late bool _obscured = widget.isPassword;
-
-  @override
   Widget build(BuildContext context) {
-    final highlight = widget.highlight;
+    final obscured = useState(isPassword);
+    final highlight = this.highlight;
     final highlightBorder = highlight == null
         ? null
         : OutlineInputBorder(
@@ -60,15 +55,17 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
             borderSide: BorderSide(color: highlight),
           );
 
-    Widget? suffix = widget.suffix;
-    if (widget.isPassword && suffix == null) {
+    Widget? suffix = this.suffix;
+    if (isPassword && suffix == null) {
       suffix = IconButton(
-        tooltip: _obscured
+        tooltip: obscured.value
             ? context.l10n.showPassword
             : context.l10n.hidePassword,
-        onPressed: () => setState(() => _obscured = !_obscured),
+        onPressed: () => obscured.value = !obscured.value,
         icon: Icon(
-          _obscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+          obscured.value
+              ? Icons.visibility_outlined
+              : Icons.visibility_off_outlined,
           color: AppColors.poussiere,
         ),
       );
@@ -79,11 +76,11 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
       children: [
         Text.rich(
           TextSpan(
-            text: widget.label,
+            text: label,
             children: [
-              if (widget.optionalHint != null)
+              if (optionalHint != null)
                 TextSpan(
-                  text: ' ${widget.optionalHint}',
+                  text: ' $optionalHint',
                   style: AppTypography.label.copyWith(
                     color: AppColors.poussiere,
                     fontWeight: FontWeight.w400,
@@ -95,26 +92,26 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
         ),
         const SizedBox(height: AppDimensions.sm),
         TextFormField(
-          controller: widget.controller,
-          enabled: widget.enabled,
-          validator: widget.validator,
-          onChanged: widget.onChanged,
-          onFieldSubmitted: widget.onSubmitted,
-          keyboardType: widget.keyboardType,
-          textInputAction: widget.textInputAction,
-          autofillHints: widget.autofillHints,
-          obscureText: _obscured,
+          controller: controller,
+          enabled: enabled,
+          validator: validator,
+          onChanged: onChanged,
+          onFieldSubmitted: onSubmitted,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          autofillHints: autofillHints,
+          obscureText: obscured.value,
           obscuringCharacter: '•',
-          autocorrect: !widget.isPassword,
-          enableSuggestions: !widget.isPassword,
+          autocorrect: !isPassword,
+          enableSuggestions: !isPassword,
           style: AppTypography.bodyStrong.copyWith(
             fontWeight: FontWeight.w500,
             fontSize: 16,
-            letterSpacing: widget.isPassword && _obscured ? 3 : null,
+            letterSpacing: isPassword && obscured.value ? 3 : null,
           ),
           cursorColor: AppColors.projecteur,
           decoration: InputDecoration(
-            hintText: widget.hint,
+            hintText: hint,
             suffixIcon: suffix,
             enabledBorder: highlightBorder,
             focusedBorder: highlightBorder,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -17,86 +18,44 @@ import '../widgets/form_feedback.dart';
 import '../widgets/labeled_text_field.dart';
 import '../widgets/password_strength_indicator.dart';
 
-class RegisterPage extends ConsumerStatefulWidget {
+/// Inscription.
+///
+/// Les contrôleurs de saisie sont des hooks (créés et libérés avec l'écran).
+/// L'écran ne les écoute pas : seuls la jauge de robustesse et le champ de
+/// confirmation se reconstruisent pendant la frappe.
+class RegisterPage extends HookConsumerWidget {
   const RegisterPage({super.key});
 
   @override
-  ConsumerState<RegisterPage> createState() => _RegisterPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formKey = useMemoized(GlobalKey<FormState>.new);
+    final fullName = useTextEditingController();
+    final email = useTextEditingController();
+    final password = useTextEditingController();
+    final confirmation = useTextEditingController();
 
-class _RegisterPageState extends ConsumerState<RegisterPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _fullName = TextEditingController();
-  final _email = TextEditingController();
-  final _password = TextEditingController();
-  final _confirmation = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    // Rafraîchit la jauge de robustesse et l'état de la confirmation.
-    _password.addListener(_refresh);
-    _confirmation.addListener(_refresh);
-  }
-
-  void _refresh() => setState(() {});
-
-  @override
-  void dispose() {
-    for (final c in [_fullName, _email, _password, _confirmation]) {
-      c.dispose();
+    void submit() {
+      FocusScope.of(context).unfocus();
+      if (!formKey.currentState!.validate()) return;
+      ref
+          .read(registerControllerProvider.notifier)
+          .submit(
+            email: email.text,
+            password: password.text,
+            fullName: fullName.text,
+          );
     }
-    super.dispose();
-  }
 
-  void _submit() {
-    FocusScope.of(context).unfocus();
-    if (!_formKey.currentState!.validate()) return;
-    ref
-        .read(registerControllerProvider.notifier)
-        .submit(
-          email: _email.text,
-          password: _password.text,
-          fullName: _fullName.text,
-        );
-  }
+    void clearServerError(String _) =>
+        ref.read(registerControllerProvider.notifier).clearError();
 
-  void _clearServerError(String _) =>
-      ref.read(registerControllerProvider.notifier).clearError();
-
-  Future<void> _showConfirmEmailDialog(String email) async {
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.velours,
-        title: Text(
-          context.l10n.confirmEmailTitle,
-          style: AppTypography.section,
-        ),
-        content: Text(
-          context.l10n.confirmEmailBody(email),
-          style: AppTypography.body,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(context.l10n.gotIt),
-          ),
-        ],
-      ),
-    );
-    if (mounted) context.go(RoutePaths.login);
-  }
-
-  @override
-  Widget build(BuildContext context) {
     // Si une session est ouverte, le routeur redirige seul vers l'accueil.
     ref.listen(registerControllerProvider, (previous, next) {
       final result = next.value;
       final justSubmitted = previous?.isLoading ?? false;
       if (!justSubmitted || result is! SignUpResult) return;
       if (result.emailConfirmationRequired) {
-        _showConfirmEmailDialog(result.user.email);
+        _showConfirmEmailDialog(context, result.user.email);
       } else {
         showAppSnackBar(
           ScaffoldMessenger.of(context),
@@ -112,17 +71,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       final failure? => l10n.failureMessage(failure),
       null => null,
     };
-    final strength = PasswordStrength.evaluate(_password.text);
-    final confirmationMatches =
-        _confirmation.text.isNotEmpty && _confirmation.text == _password.text;
-    final confirmationMismatch =
-        _confirmation.text.length >= _password.text.length &&
-        _confirmation.text.isNotEmpty &&
-        !confirmationMatches;
 
     return AuthScaffold(
       body: Form(
-        key: _formKey,
+        key: formKey,
         child: AutofillGroup(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -159,7 +111,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               LabeledTextField(
                 label: l10n.fieldFullName,
                 optionalHint: l10n.fieldOptional,
-                controller: _fullName,
+                controller: fullName,
                 hint: l10n.fieldFullNameHint,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.name],
@@ -167,65 +119,39 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               const SizedBox(height: AppDimensions.xl),
               LabeledTextField(
                 label: l10n.fieldEmail,
-                controller: _email,
+                controller: email,
                 hint: l10n.fieldEmailHint,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
                 validator: (v) =>
                     l10n.validationMessage(AuthValidators.email(v)),
-                onChanged: _clearServerError,
+                onChanged: clearServerError,
               ),
               const SizedBox(height: AppDimensions.xl),
               LabeledTextField(
                 label: l10n.fieldPassword,
-                controller: _password,
+                controller: password,
                 isPassword: true,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.newPassword],
                 validator: (v) =>
                     l10n.validationMessage(AuthValidators.newPassword(v)),
-                onChanged: _clearServerError,
+                onChanged: clearServerError,
               ),
-              PasswordStrengthIndicator(strength: strength),
+              _LivePasswordStrength(password: password),
               const SizedBox(height: AppDimensions.xl),
-              LabeledTextField(
-                label: l10n.fieldPasswordConfirmation,
-                controller: _confirmation,
-                isPassword: true,
-                textInputAction: TextInputAction.done,
-                validator: (v) => l10n.validationMessage(
-                  AuthValidators.confirmation(v, _password.text),
-                ),
-                onSubmitted: (_) => _submit(),
-                highlight: confirmationMatches
-                    ? AppColors.menthe
-                    : (confirmationMismatch ? AppColors.signal : null),
-                suffix: confirmationMatches
-                    ? const Icon(Icons.check_rounded, color: AppColors.menthe)
-                    : null,
+              _ConfirmationField(
+                password: password,
+                confirmation: confirmation,
+                onSubmitted: submit,
               ),
-              if (confirmationMatches || confirmationMismatch)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppDimensions.md),
-                  child: Text(
-                    confirmationMatches
-                        ? l10n.passwordsMatch
-                        : l10n.validationPasswordsMismatch,
-                    style: AppTypography.caption.copyWith(
-                      fontSize: 14,
-                      color: confirmationMatches
-                          ? AppColors.menthe
-                          : AppColors.signal,
-                    ),
-                  ),
-                ),
               if (serverError != null) FormErrorMessage(serverError),
               const SizedBox(height: AppDimensions.xxl),
               LoadingFilledButton(
                 label: l10n.registerButton,
                 isLoading: state.isLoading,
-                onPressed: _submit,
+                onPressed: submit,
               ),
             ],
           ),
@@ -237,6 +163,108 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         onTap: () =>
             context.canPop() ? context.pop() : context.go(RoutePaths.login),
       ),
+    );
+  }
+
+  Future<void> _showConfirmEmailDialog(
+    BuildContext context,
+    String email,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.velours,
+        title: Text(
+          context.l10n.confirmEmailTitle,
+          style: AppTypography.section,
+        ),
+        content: Text(
+          context.l10n.confirmEmailBody(email),
+          style: AppTypography.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(context.l10n.gotIt),
+          ),
+        ],
+      ),
+    );
+    if (context.mounted) context.go(RoutePaths.login);
+  }
+}
+
+/// Jauge de robustesse : seul widget reconstruit à la frappe du mot de passe.
+class _LivePasswordStrength extends HookWidget {
+  const _LivePasswordStrength({required this.password});
+
+  final TextEditingController password;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = useValueListenable(password).text;
+    return PasswordStrengthIndicator(strength: PasswordStrength.evaluate(text));
+  }
+}
+
+/// Champ de confirmation : bordure verte/rouge et message selon qu'il
+/// correspond au mot de passe. Écoute les deux champs.
+class _ConfirmationField extends HookWidget {
+  const _ConfirmationField({
+    required this.password,
+    required this.confirmation,
+    required this.onSubmitted,
+  });
+
+  final TextEditingController password;
+  final TextEditingController confirmation;
+  final VoidCallback onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    useListenable(
+      useMemoized(() => Listenable.merge([password, confirmation]), [
+        password,
+        confirmation,
+      ]),
+    );
+    final l10n = context.l10n;
+    final typed = confirmation.text;
+    final matches = typed.isNotEmpty && typed == password.text;
+    final mismatch =
+        typed.isNotEmpty && typed.length >= password.text.length && !matches;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        LabeledTextField(
+          label: l10n.fieldPasswordConfirmation,
+          controller: confirmation,
+          isPassword: true,
+          textInputAction: TextInputAction.done,
+          validator: (v) => l10n.validationMessage(
+            AuthValidators.confirmation(v, password.text),
+          ),
+          onSubmitted: (_) => onSubmitted(),
+          highlight: matches
+              ? AppColors.menthe
+              : (mismatch ? AppColors.signal : null),
+          suffix: matches
+              ? const Icon(Icons.check_rounded, color: AppColors.menthe)
+              : null,
+        ),
+        if (matches || mismatch)
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.md),
+            child: Text(
+              matches ? l10n.passwordsMatch : l10n.validationPasswordsMismatch,
+              style: AppTypography.caption.copyWith(
+                fontSize: 14,
+                color: matches ? AppColors.menthe : AppColors.signal,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

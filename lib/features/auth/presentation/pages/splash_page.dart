@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_dimensions.dart';
@@ -14,24 +15,13 @@ import '../providers/auth_providers.dart';
 
 /// Vérifie la session restaurée et l'état du réseau, puis redirige vers
 /// l'accueil (session existante) ou la connexion.
-class SplashPage extends ConsumerStatefulWidget {
+class SplashPage extends HookConsumerWidget {
   const SplashPage({super.key});
 
-  @override
-  ConsumerState<SplashPage> createState() => _SplashPageState();
-}
-
-class _SplashPageState extends ConsumerState<SplashPage> {
   static const _minimumDisplay = Duration(milliseconds: 1200);
   static const _networkCheckTimeout = Duration(seconds: 2);
 
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_bootstrap());
-  }
-
-  Future<void> _bootstrap() async {
+  Future<void> _bootstrap(BuildContext context, WidgetRef ref) async {
     try {
       await Future.wait([
         Future<void>.delayed(_minimumDisplay),
@@ -46,7 +36,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       debugPrint('[splash] vérification réseau impossible : $e');
     } finally {
       // Quoi qu'il arrive, le Splash ne doit jamais rester bloqué.
-      if (mounted) {
+      if (context.mounted) {
         final user = ref.read(getCurrentUserProvider)();
         context.go(user != null ? RoutePaths.home : RoutePaths.login);
       }
@@ -54,7 +44,13 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Une seule fois, au premier affichage.
+    useEffect(() {
+      unawaited(_bootstrap(context, ref));
+      return null;
+    }, const []);
+
     return Scaffold(
       body: SafeArea(
         child: Center(

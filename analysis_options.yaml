@@ -18,7 +18,15 @@ analyzer:
 linter:
   rules:
     - prefer_single_quotes
+    # Performance : widgets constants (jamais reconstruits) et widgets légers.
     - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
+    - prefer_const_declarations
+    - unnecessary_const
+    - use_colored_box
+    - use_decorated_box
+    - avoid_unnecessary_containers
+    - sized_box_for_whitespace
     - prefer_final_locals
     - always_declare_return_types
     - avoid_print

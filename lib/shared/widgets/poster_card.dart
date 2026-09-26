@@ -5,6 +5,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
 import '../../app/theme/app_typography.dart';
 import '../../core/network/api_constants.dart';
+import '../extensions/image_x.dart';
 import '../extensions/l10n_x.dart';
 
 /// Affiche d'un film (ratio 2:3).
@@ -51,7 +52,6 @@ class PosterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tint = AppColors.posterTint(movieId);
     final radius = BorderRadius.circular(AppDimensions.radiusMd);
-    final url = ApiConstants.poster(posterPath);
     final placeholder = _Placeholder(
       tint: tint,
       title: showPlaceholderTitle ? title : null,
@@ -88,15 +88,28 @@ class PosterCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   ExcludeSemantics(
-                    child: url == null
+                    child: posterPath == null
                         ? placeholder
-                        : CachedNetworkImage(
-                            imageUrl: url,
-                            fit: BoxFit.cover,
-                            memCacheWidth: 360,
-                            fadeInDuration: const Duration(milliseconds: 200),
-                            placeholder: (_, _) => placeholder,
-                            errorWidget: (_, _, _) => placeholder,
+                        : LayoutBuilder(
+                            // Téléchargée et décodée à la taille affichée.
+                            builder: (context, constraints) {
+                              final pixels = context.decodeWidth(
+                                constraints.maxWidth,
+                              );
+                              return CachedNetworkImage(
+                                imageUrl: ApiConstants.poster(
+                                  posterPath,
+                                  size: ApiConstants.posterSizeFor(pixels),
+                                )!,
+                                fit: BoxFit.cover,
+                                memCacheWidth: pixels,
+                                fadeInDuration: const Duration(
+                                  milliseconds: 200,
+                                ),
+                                placeholder: (_, _) => placeholder,
+                                errorWidget: (_, _, _) => placeholder,
+                              );
+                            },
                           ),
                   ),
                   if (badge != null)

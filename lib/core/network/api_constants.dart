@@ -20,6 +20,22 @@ abstract final class ApiConstants {
   static const connectTimeout = Duration(seconds: 10);
   static const receiveTimeout = Duration(seconds: 15);
 
+  /// Plus petite taille d'affiche TMDB couvrant [pixels] (largeur physique) :
+  /// une vignette de recherche ne télécharge pas l'affiche des grilles.
+  static String posterSizeFor(int pixels) => switch (pixels) {
+    <= 154 => 'w154',
+    <= 185 => 'w185',
+    <= 342 => 'w342',
+    _ => 'w500',
+  };
+
+  /// Idem pour les images de fond (w300, w780 ou w1280).
+  static String backdropSizeFor(int pixels) => switch (pixels) {
+    <= 300 => 'w300',
+    <= 780 => 'w780',
+    _ => 'w1280',
+  };
+
   static String? poster(String? path, {String size = 'w342'}) =>
       path == null ? null : '$tmdbImageBaseUrl/$size$path';
 

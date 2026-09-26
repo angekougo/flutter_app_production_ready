@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
 import '../../core/network/api_constants.dart';
+import '../extensions/image_x.dart';
 
 /// Portrait rond : photo TMDB, ou initiales sur une teinte propre à la
 /// personne (« CS », « YB »… du design).
@@ -51,7 +52,7 @@ class PersonAvatar extends StatelessWidget {
             : CachedNetworkImage(
                 imageUrl: url,
                 fit: BoxFit.cover,
-                memCacheWidth: (size * 3).round(),
+                memCacheWidth: context.decodeWidth(size),
                 placeholder: (_, _) => fallback,
                 errorWidget: (_, _, _) => fallback,
               ),

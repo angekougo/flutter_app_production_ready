@@ -6,6 +6,7 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/network/api_constants.dart';
 import '../../../../shared/extensions/format_x.dart';
+import '../../../../shared/extensions/image_x.dart';
 import '../../../../shared/extensions/l10n_x.dart';
 import '../../../../shared/widgets/person_avatar.dart';
 import '../../../../shared/widgets/poster_card.dart';
@@ -27,7 +28,13 @@ class MovieDetailsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tint = AppColors.posterTint(movie.id);
-    final backdrop = ApiConstants.backdrop(movie.backdropPath);
+    final backdropPixels = context.decodeWidth(
+      MediaQuery.sizeOf(context).width,
+    );
+    final backdrop = ApiConstants.backdrop(
+      movie.backdropPath,
+      size: ApiConstants.backdropSizeFor(backdropPixels),
+    );
     final showOriginal =
         movie.originalTitle != null &&
         movie.originalTitle!.toLowerCase() != movie.title.toLowerCase();
@@ -45,6 +52,7 @@ class MovieDetailsHeader extends StatelessWidget {
                 CachedNetworkImage(
                   imageUrl: backdrop,
                   fit: BoxFit.cover,
+                  memCacheWidth: backdropPixels,
                   errorWidget: (_, _, _) => const SizedBox.shrink(),
                 ),
               // Fondu vers le fond de l'écran.

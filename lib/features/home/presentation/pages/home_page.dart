@@ -36,10 +36,14 @@ class HomePage extends ConsumerWidget {
       }
     });
 
-    final user = ref.watch(currentUserProvider);
+    // Seul le prénom compte : le rafraîchissement du JWT (nouvel objet
+    // utilisateur) ne reconstruit pas l'accueil.
+    final firstName = ref.watch(
+      currentUserProvider.select((user) => user?.firstName),
+    );
     final greeting = [
       context.l10n.greeting(DateTime.now()),
-      if (user != null) user.firstName,
+      ?firstName,
     ].join(', ');
     final overview = ref.watch(homeOverviewProvider);
 
@@ -169,7 +173,9 @@ class _HomeSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final section = ref.watch(homeSectionProvider(category));
-    final hasGenreFilter = ref.watch(selectedGenreProvider) != null;
+    final hasGenreFilter = ref.watch(
+      selectedGenreProvider.select((id) => id != null),
+    );
     final fromCache = section.value?.fromCache ?? false;
 
     final Widget content = switch (section) {

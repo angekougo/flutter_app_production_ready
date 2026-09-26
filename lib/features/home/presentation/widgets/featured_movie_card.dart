@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/network/api_constants.dart';
+import '../../../../shared/extensions/image_x.dart';
 import '../../../../shared/extensions/l10n_x.dart';
 import '../../../movies/domain/entities/movie.dart';
 
@@ -24,7 +25,14 @@ class FeaturedMovieCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tint = AppColors.posterTint(movie.id);
-    final backdrop = ApiConstants.backdrop(movie.backdropPath);
+    // Carte en pleine largeur : image adaptée à l'écran de l'appareil.
+    final backdropPixels = context.decodeWidth(
+      MediaQuery.sizeOf(context).width,
+    );
+    final backdrop = ApiConstants.backdrop(
+      movie.backdropPath,
+      size: ApiConstants.backdropSizeFor(backdropPixels),
+    );
     final meta = [
       if (movie.year != null) '${movie.year}',
       if (genreName != null) genreName!.toUpperCase(),
@@ -64,6 +72,7 @@ class FeaturedMovieCard extends StatelessWidget {
                     CachedNetworkImage(
                       imageUrl: backdrop,
                       fit: BoxFit.cover,
+                      memCacheWidth: backdropPixels,
                       fadeInDuration: const Duration(milliseconds: 250),
                       errorWidget: (_, _, _) => const SizedBox.shrink(),
                     ),

@@ -296,42 +296,47 @@ Future<void> _showFullCast(BuildContext context, List<CastMember> cast) {
       expand: false,
       initialChildSize: 0.7,
       maxChildSize: 0.95,
-      builder: (context, controller) => ListView(
+      // Construit à la demande : un casting TMDB dépasse souvent 50 personnes
+      // (portraits chargés seulement quand ils deviennent visibles).
+      builder: (context, controller) => ListView.builder(
         controller: controller,
         padding: const EdgeInsets.only(bottom: AppDimensions.xl),
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppDimensions.gutter,
-              0,
-              AppDimensions.gutter,
-              AppDimensions.md,
-            ),
-            child: Text(context.l10n.cast, style: AppTypography.section),
-          ),
-          for (final member in cast)
-            ListTile(
-              contentPadding: AppDimensions.screenPadding,
-              leading: PersonAvatar(
-                personId: member.id,
-                initials: member.initials,
-                profilePath: member.profilePath,
-                size: 48,
+        itemCount: cast.length + 1,
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.gutter,
+                0,
+                AppDimensions.gutter,
+                AppDimensions.md,
               ),
-              title: Text(member.name, style: AppTypography.bodyStrong),
-              subtitle: member.character == null
-                  ? null
-                  : Text(member.character!, style: AppTypography.caption),
-              trailing: const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.poussiere,
-              ),
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                _openActor(context, member);
-              },
+              child: Text(context.l10n.cast, style: AppTypography.section),
+            );
+          }
+          final member = cast[index - 1];
+          return ListTile(
+            contentPadding: AppDimensions.screenPadding,
+            leading: PersonAvatar(
+              personId: member.id,
+              initials: member.initials,
+              profilePath: member.profilePath,
+              size: 48,
             ),
-        ],
+            title: Text(member.name, style: AppTypography.bodyStrong),
+            subtitle: member.character == null
+                ? null
+                : Text(member.character!, style: AppTypography.caption),
+            trailing: const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.poussiere,
+            ),
+            onTap: () {
+              Navigator.of(sheetContext).pop();
+              _openActor(context, member);
+            },
+          );
+        },
       ),
     ),
   );

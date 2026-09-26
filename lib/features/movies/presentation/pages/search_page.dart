@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -15,53 +16,44 @@ import '../providers/movie_providers.dart';
 import '../providers/movie_search_controller.dart';
 import '../widgets/search_result_tile.dart';
 
-class SearchPage extends ConsumerStatefulWidget {
+/// Recherche de films.
+///
+/// L'écran lui-même ne se reconstruit jamais pendant la frappe : l'état de
+/// recherche est observé par [_SearchBody], et le texte saisi par les seuls
+/// widgets qui l'affichent ([_SearchField], [_IdleView]).
+class SearchPage extends HookConsumerWidget {
   const SearchPage({super.key});
 
-  @override
-  ConsumerState<SearchPage> createState() => _SearchPageState();
-}
-
-class _SearchPageState extends ConsumerState<SearchPage> {
   static const _loadMoreThreshold = 500.0;
 
-  // Reprend la dernière requête : la recherche survit au changement d'onglet.
-  late final _text = TextEditingController(
-    text: ref.read(movieSearchProvider).query,
-  );
-
-  MovieSearchController get _controller =>
-      ref.read(movieSearchProvider.notifier);
-
   @override
-  void dispose() {
-    _text.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Reprend la dernière requête : la recherche survit au changement d'onglet.
+    final text = useTextEditingController(
+      text: ref.read(movieSearchProvider).query,
+    );
+    MovieSearchController controller() =>
+        ref.read(movieSearchProvider.notifier);
 
-  void _useRecent(String query) {
-    _text
-      ..text = query
-      ..selection = TextSelection.collapsed(offset: query.length);
-    FocusScope.of(context).unfocus();
-    _controller.submit(query);
-  }
-
-  void _clear() {
-    _text.clear();
-    _controller.onQueryChanged('');
-  }
-
-  bool _onScroll(ScrollNotification notification) {
-    if (notification.metrics.extentAfter < _loadMoreThreshold) {
-      _controller.loadMore();
+    void useRecent(String query) {
+      text
+        ..text = query
+        ..selection = TextSelection.collapsed(offset: query.length);
+      FocusScope.of(context).unfocus();
+      controller().submit(query);
     }
-    return false;
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(movieSearchProvider);
+    void clear() {
+      text.clear();
+      controller().onQueryChanged('');
+    }
+
+    bool onScroll(ScrollNotification notification) {
+      if (notification.metrics.extentAfter < _loadMoreThreshold) {
+        controller().loadMore();
+      }
+      return false;
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -93,25 +85,18 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   ),
                   const SizedBox(height: AppDimensions.sm),
                   _SearchField(
-                    controller: _text,
-                    onChanged: (value) {
-                      setState(() {}); // bouton « effacer »
-                      _controller.onQueryChanged(value);
-                    },
-                    onSubmitted: _controller.submit,
-                    onClear: _clear,
+                    controller: text,
+                    onChanged: (value) => controller().onQueryChanged(value),
+                    onSubmitted: (value) => controller().submit(value),
+                    onClear: clear,
                   ),
                 ],
               ),
             ),
             Expanded(
               child: NotificationListener<ScrollNotification>(
-                onNotification: _onScroll,
-                child: _SearchBody(
-                  state: state,
-                  typedQuery: _text.text,
-                  onRecentTap: _useRecent,
-                ),
+                onNotification: onScroll,
+                child: _SearchBody(text: text, onRecentTap: useRecent),
               ),
             ),
           ],
@@ -121,7 +106,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 }
 
-class _SearchField extends StatelessWidget {
+class _SearchField extends HookWidget {
   const _SearchField({
     required this.controller,
     required this.onChanged,
@@ -136,6 +121,8 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Seul ce champ se reconstruit à la frappe (bouton « Effacer »).
+    final isEmpty = useValueListenable(controller).text.isEmpty;
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppDimensions.radiusLg + 4),
       borderSide: const BorderSide(color: AppColors.trait),
@@ -158,7 +145,7 @@ class _SearchField extends StatelessWidget {
           padding: EdgeInsets.only(left: AppDimensions.lg, right: 6),
           child: Icon(Icons.search_rounded, color: AppColors.poussiere),
         ),
-        suffixIcon: controller.text.isEmpty
+        suffixIcon: isEmpty
             ? null
             : IconButton(
                 tooltip: context.l10n.searchClear,
@@ -176,25 +163,20 @@ class _SearchField extends StatelessWidget {
 }
 
 class _SearchBody extends ConsumerWidget {
-  const _SearchBody({
-    required this.state,
-    required this.typedQuery,
-    required this.onRecentTap,
-  });
+  const _SearchBody({required this.text, required this.onRecentTap});
 
-  final SearchState state;
-  final String typedQuery;
+  final TextEditingController text;
   final ValueChanged<String> onRecentTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(movieSearchProvider);
     final notifier = ref.read(movieSearchProvider.notifier);
     final l10n = context.l10n;
 
     switch (state.status) {
       case SearchStatus.idle:
-        return _IdleView(typedQuery: typedQuery, onRecentTap: onRecentTap);
-
+        return _IdleView(text: text, onRecentTap: onRecentTap);
       case SearchStatus.loading:
         return Semantics(
           label: l10n.a11yLoading,
@@ -241,14 +223,15 @@ class _SearchBody extends ConsumerWidget {
   }
 }
 
-class _IdleView extends ConsumerWidget {
-  const _IdleView({required this.typedQuery, required this.onRecentTap});
+class _IdleView extends HookConsumerWidget {
+  const _IdleView({required this.text, required this.onRecentTap});
 
-  final String typedQuery;
+  final TextEditingController text;
   final ValueChanged<String> onRecentTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final typedQuery = useValueListenable(text).text;
     if (typedQuery.trim().isNotEmpty) {
       // Requête trop courte, ou saisie en cours (anti-rebond).
       return Padding(

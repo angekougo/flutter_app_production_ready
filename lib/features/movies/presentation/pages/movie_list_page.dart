@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -16,36 +16,32 @@ import '../../domain/entities/movie_category.dart';
 import '../providers/movie_list_controller.dart';
 
 /// « Tout voir » : grille paginée d'une catégorie (défilement infini).
-class MovieListPage extends ConsumerStatefulWidget {
+class MovieListPage extends ConsumerWidget {
   const MovieListPage({super.key, required this.category});
 
   final MovieCategory category;
 
-  @override
-  ConsumerState<MovieListPage> createState() => _MovieListPageState();
-}
-
-class _MovieListPageState extends ConsumerState<MovieListPage> {
   /// Distance au bas de la liste qui déclenche la page suivante.
   static const _loadMoreThreshold = 600.0;
 
-  late final _provider = movieListControllerProvider(widget.category);
-
-  bool _onScroll(ScrollNotification notification) {
-    if (notification.metrics.extentAfter < _loadMoreThreshold) {
-      ref.read(_provider.notifier).loadMore();
-    }
-    return false;
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(_provider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = movieListControllerProvider(category);
+    bool onScroll(ScrollNotification notification) {
+      if (notification.metrics.extentAfter < _loadMoreThreshold) {
+        ref.read(provider.notifier).loadMore();
+      }
+      return false;
+    }
+
+    void retryLoadMore() => ref.read(provider.notifier).loadMore();
+
+    final state = ref.watch(provider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          context.l10n.categoryLabel(widget.category),
+          context.l10n.categoryLabel(category),
           style: AppTypography.section.copyWith(fontSize: 26),
         ),
         titleSpacing: 0,
@@ -54,10 +50,10 @@ class _MovieListPageState extends ConsumerState<MovieListPage> {
         AsyncValue(:final value?) => RefreshIndicator(
           color: AppColors.projecteur,
           backgroundColor: AppColors.salle,
-          onRefresh: () => ref.refresh(_provider.future),
+          onRefresh: () => ref.refresh(provider.future),
           child: NotificationListener<ScrollNotification>(
-            onNotification: _onScroll,
-            child: _Grid(state: value, onRetry: _retryLoadMore),
+            onNotification: onScroll,
+            child: _Grid(state: value, onRetry: retryLoadMore),
           ),
         ),
         AsyncValue(:final failure?) => StateMessageView(
@@ -66,14 +62,12 @@ class _MovieListPageState extends ConsumerState<MovieListPage> {
           title: context.l10n.loadErrorTitle,
           message: context.l10n.failureMessage(failure),
           primaryLabel: context.l10n.retry,
-          onPrimary: () => ref.invalidate(_provider),
+          onPrimary: () => ref.invalidate(provider),
         ),
         _ => const _GridSkeleton(),
       },
     );
   }
-
-  void _retryLoadMore() => ref.read(_provider.notifier).loadMore();
 }
 
 class _Grid extends StatelessWidget {
