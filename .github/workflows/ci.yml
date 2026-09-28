@@ -46,7 +46,11 @@ jobs:
           git diff --exit-code lib/l10n
 
       - name: Formatage
-        run: dart format --output=none --set-exit-if-changed lib test integration_test test_driver
+        run: dart format --output=none --set-exit-if-changed lib test integration_test test_driver tool
+
+      # Fichiers et lignes cités dans le README : toujours conformes au code.
+      - name: Références du README à jour
+        run: tool/ci/run.sh "README" dart run tool/readme_refs.dart --check
 
       - name: Analyse statique
         run: tool/ci/run.sh "Analyse statique" flutter analyze --fatal-infos --fatal-warnings
